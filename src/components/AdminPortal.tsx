@@ -607,82 +607,164 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToLanding }) => 
                 </div>
               </div>
 
-              {/* 4 HIGH-QUALITY KPI CARDS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* 4 EXECUTIVE KPI STAT METRICS BENTO */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                
+                {/* Stat 1: Total Active Accounts */}
                 <div 
                   onClick={() => setActiveNav('Users')} 
-                  className="bg-[#FFFDF8] rounded-2xl p-5 border border-[#E2D7C6] shadow-xs space-y-2 cursor-pointer hover:border-[#123B63] transition-colors"
+                  className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 border border-[#0C2238]/08 shadow-xs hover:shadow-md hover:border-[#C99632]/40 transition-all duration-300 flex flex-col justify-between space-y-4 cursor-pointer"
                 >
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#5A6E7F]">Total Active Accounts</span>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#102A43]">4,360</span>
-                    <span className="text-xs font-bold text-[#15803D]">Total</span>
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-2xl bg-[#EEF2FF] border border-[#E0E7FF] flex items-center justify-center text-[#4F46E5] shadow-2xs">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-extrabold tracking-wide">
+                      VERIFIED ACCOUNTS
+                    </span>
                   </div>
-                  <p className="text-xs text-[#5A6E7F]">Students + Faculty + Administrators</p>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#627083] block mb-1">
+                      Total Active Accounts
+                    </span>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
+                        4,360
+                      </span>
+                      <span className="text-xs font-bold text-[#159A72]">Users</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
+                    <span>Students + Faculty + Staff</span>
+                    <span className="font-bold text-[#10253A]">100% Active</span>
+                  </div>
                 </div>
 
+                {/* Stat 2: Enrolled Students */}
                 <div 
                   onClick={() => setActiveNav('Students')} 
-                  className="bg-[#FFFDF8] rounded-2xl p-5 border border-[#E2D7C6] shadow-xs space-y-2 cursor-pointer hover:border-[#123B63] transition-colors"
+                  className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 border border-[#0C2238]/08 shadow-xs hover:shadow-md hover:border-[#C99632]/40 transition-all duration-300 flex flex-col justify-between space-y-4 cursor-pointer"
                 >
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#5A6E7F]">Enrolled Students</span>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#123B63]">4,120</span>
-                    <span className="text-xs font-semibold text-[#15803D]">Active</span>
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-2xl bg-[#DCFCE7] border border-[#BBF7D0] flex items-center justify-center text-[#15803D] shadow-2xs">
+                      <GraduationCap className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-extrabold tracking-wide">
+                      ENROLLED
+                    </span>
                   </div>
-                  <p className="text-xs text-[#5A6E7F]">Across 5 B.Tech & M.Tech Departments</p>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#627083] block mb-1">
+                      Undergraduate Cohort
+                    </span>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
+                        4,120
+                      </span>
+                      <span className="text-xs font-bold text-[#159A72]">Active</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
+                    <span>Across 5 Departments</span>
+                    <span className="font-bold text-[#10253A]">Autonomous</span>
+                  </div>
                 </div>
 
+                {/* Stat 3: Faculty Mentors */}
                 <div 
                   onClick={() => setActiveNav('Faculty / Mentors')} 
-                  className="bg-[#FFFDF8] rounded-2xl p-5 border border-[#E2D7C6] shadow-xs space-y-2 cursor-pointer hover:border-[#123B63] transition-colors"
+                  className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 border border-[#0C2238]/08 shadow-xs hover:shadow-md hover:border-[#C99632]/40 transition-all duration-300 flex flex-col justify-between space-y-4 cursor-pointer"
                 >
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#5A6E7F]">Faculty Mentors</span>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#102A43]">214</span>
-                    <span className="text-xs font-semibold text-[#123B63]">Assigned</span>
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-2xl bg-[#FEF3C7] border border-[#FDE68A] flex items-center justify-center text-[#D97706] shadow-2xs">
+                      <UserCheck className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#FEF3C7] text-[#D97706] text-[10px] font-extrabold tracking-wide">
+                      FACULTY COUNCIL
+                    </span>
                   </div>
-                  <p className="text-xs text-[#5A6E7F]">1:20 Institutional Mentoring Ratio</p>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#627083] block mb-1">
+                      Assigned Faculty Mentors
+                    </span>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
+                        214
+                      </span>
+                      <span className="text-xs font-bold text-[#0C2238]">Mentors</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
+                    <span>1:20 Mentoring Ratio</span>
+                    <span className="font-bold text-[#159A72]">Target Met</span>
+                  </div>
                 </div>
 
+                {/* Stat 4: System Uptime */}
                 <div 
                   onClick={() => setActiveNav('Integration Health')} 
-                  className="bg-[#FFFDF8] rounded-2xl p-5 border border-[#E2D7C6] shadow-xs space-y-2 cursor-pointer hover:border-[#123B63] transition-colors"
+                  className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 border border-[#0C2238]/08 shadow-xs hover:shadow-md hover:border-[#C99632]/40 transition-all duration-300 flex flex-col justify-between space-y-4 cursor-pointer"
                 >
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#5A6E7F]">System Uptime</span>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#15803D]">99.98%</span>
-                    <span className="text-xs font-bold text-[#15803D]">Optimal</span>
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-2xl bg-[#E0E7FF] border border-[#C7D2FE] flex items-center justify-center text-[#4338CA] shadow-2xs">
+                      <Server className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-extrabold tracking-wide">
+                      HIGH AVAILABILITY
+                    </span>
                   </div>
-                  <p className="text-xs text-[#5A6E7F]">All 6 Microservices Operational</p>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#627083] block mb-1">
+                      Core Infrastructure Uptime
+                    </span>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#15803D] font-display">
+                        99.98%
+                      </span>
+                      <span className="text-xs font-bold text-[#15803D]">Optimal</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
+                    <span>All 6 Microservices</span>
+                    <span className="font-bold text-[#15803D]">Zero Outage</span>
+                  </div>
                 </div>
+
               </div>
 
-              {/* SYSTEM HEALTH MONITOR */}
-              <div className="bg-[#FFFDF8] rounded-2xl p-6 border border-[#E2D7C6] shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-extrabold text-[#102A43]">System Health & Telemetry</h3>
-                  <span className="px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[10px] font-bold text-[#15803D]">
+              {/* SYSTEM HEALTH TELEMETRY */}
+              <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 sm:p-7 border border-[#0C2238]/08 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-[#0C2238]/06 pb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-9 h-9 rounded-xl bg-[#EFE7D8] flex items-center justify-center text-[#0C2238]">
+                      <Activity className="w-4.5 h-4.5 text-[#0C2238]" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-extrabold text-[#10253A] tracking-tight">Institutional System Telemetry</h3>
+                      <p className="text-[11px] text-[#627083]">Live health status across autonomous infrastructure</p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-[#DCFCE7] text-[10px] font-black text-[#15803D] uppercase tracking-wider">
                     ALL SYSTEMS HEALTHY
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs pt-1">
                   {[
                     { name: 'Authentication', status: 'Operational', ping: '12ms' },
-                    { name: 'Academic Sync', status: 'Operational', ping: '45ms' },
-                    { name: 'AI Provider', status: 'Operational', ping: '88ms' },
-                    { name: 'RAG / Vector', status: 'Operational', ping: '32ms' },
-                    { name: 'Database', status: 'Operational', ping: '8ms' },
-                    { name: 'Notifications', status: 'Operational', ping: '18ms' },
+                    { name: 'Academic ERP', status: 'Operational', ping: '45ms' },
+                    { name: 'Gemini RAG API', status: 'Operational', ping: '88ms' },
+                    { name: 'pgvector Store', status: 'Operational', ping: '18ms' },
+                    { name: 'PostgreSQL DB', status: 'Operational', ping: '8ms' },
+                    { name: 'Notifications', status: 'Operational', ping: '15ms' },
                   ].map((svc) => (
-                    <div key={svc.name} className="p-3 rounded-xl bg-[#F7F2E9] border border-[#E2D7C6] space-y-1">
+                    <div key={svc.name} className="p-3.5 rounded-2xl bg-[#F7F4EE] border border-[#0C2238]/08 space-y-1 hover:border-[#C99632]/40 transition-colors">
                       <div className="flex items-center space-x-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#15803D]" />
-                        <p className="font-bold text-[#102A43] truncate">{svc.name}</p>
+                        <span className="w-2 h-2 rounded-full bg-[#159A72] animate-pulse" />
+                        <p className="font-extrabold text-[#10253A] truncate">{svc.name}</p>
                       </div>
-                      <p className="text-[11px] font-semibold text-[#15803D]">{svc.status}</p>
-                      <p className="text-[10px] text-[#5A6E7F]">Latency: {svc.ping}</p>
+                      <p className="text-[11px] font-bold text-[#159A72]">{svc.status}</p>
+                      <p className="text-[10px] text-[#627083]">Latency: {svc.ping}</p>
                     </div>
                   ))}
                 </div>

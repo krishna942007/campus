@@ -38,7 +38,8 @@ import {
   BookOpen,
   User,
   RotateCcw,
-  CheckSquare
+  CheckSquare,
+  Sliders
 } from 'lucide-react';
 import {
   getMentoringStore,
@@ -726,102 +727,194 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) =
           {activeNav === 'Overview' && (
             <div className="space-y-6">
               
-              {/* 4 MENTOR METRIC CARDS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-[#FFFDF8] rounded-2xl p-5 border border-[#E2D7C6] shadow-xs space-y-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#5A6E7F]">Assigned Mentees</span>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#102A43]">{allMentees.length}</span>
-                    <span className="text-xs font-bold text-[#15803D]">Students</span>
+              {/* EXECUTIVE KPI STAT METRICS BENTO */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                
+                {/* Stat 1: Assigned Mentees */}
+                <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 border border-[#0C2238]/08 shadow-xs hover:shadow-md hover:border-[#C99632]/40 transition-all duration-300 flex flex-col justify-between space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-2xl bg-[#EEF2FF] border border-[#E0E7FF] flex items-center justify-center text-[#4F46E5] shadow-2xs">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-extrabold tracking-wide">
+                      ACTIVE COHORT
+                    </span>
                   </div>
-                  <p className="text-[11px] text-[#5A6E7F]">CSE & AI/ML Stream</p>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#627083] block mb-1">
+                      Assigned Mentees
+                    </span>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
+                        {allMentees.length}
+                      </span>
+                      <span className="text-xs font-bold text-[#159A72]">Students</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
+                    <span>CSE & AI/ML Stream</span>
+                    <span className="font-bold text-[#10253A]">Cap: 20</span>
+                  </div>
                 </div>
 
-                <div className="bg-[#FFFDF8] rounded-2xl p-5 border border-[#E2D7C6] shadow-xs space-y-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#5A6E7F]">Pending Requests</span>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#123B63]">{pendingRequestsCount}</span>
-                    <span className="text-xs font-bold text-[#D97706]">Awaiting Review</span>
+                {/* Stat 2: Pending Requests */}
+                <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 border border-[#0C2238]/08 shadow-xs hover:shadow-md hover:border-[#C99632]/40 transition-all duration-300 flex flex-col justify-between space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-2xl bg-[#FEF3C7] border border-[#FDE68A] flex items-center justify-center text-[#D97706] shadow-2xs">
+                      <UserCheck className="w-5 h-5" />
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide ${
+                      pendingRequestsCount > 0 ? 'bg-[#FEF3C7] text-[#D97706]' : 'bg-[#EFE7D8] text-[#627083]'
+                    }`}>
+                      {pendingRequestsCount > 0 ? 'ACTION NEEDED' : 'CLEAR'}
+                    </span>
                   </div>
-                  <p className="text-[11px] text-[#5A6E7F]">96% Avg Deterministic Match</p>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#627083] block mb-1">
+                      Pending Requests
+                    </span>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
+                        {pendingRequestsCount}
+                      </span>
+                      <span className="text-xs font-bold text-[#D97706]">Awaiting Review</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
+                    <span>Deterministic RAG</span>
+                    <span className="font-bold text-[#159A72]">96% Match Avg</span>
+                  </div>
                 </div>
 
-                <div className="bg-[#FFFDF8] rounded-2xl p-5 border border-[#E2D7C6] shadow-xs space-y-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#5A6E7F]">Attention Flagged</span>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#B91C1C]">1</span>
-                    <span className="text-xs font-bold text-[#B91C1C]">Critical</span>
+                {/* Stat 3: Attention Flagged */}
+                <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 border border-[#0C2238]/08 shadow-xs hover:shadow-md hover:border-[#C99632]/40 transition-all duration-300 flex flex-col justify-between space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-2xl bg-[#FEE2E2] border border-[#FECACA] flex items-center justify-center text-[#B91C1C] shadow-2xs">
+                      <AlertTriangle className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#FEE2E2] text-[#B91C1C] text-[10px] font-extrabold tracking-wide">
+                      HIGH RISK
+                    </span>
                   </div>
-                  <p className="text-[11px] text-[#5A6E7F]">Aarav Sharma (Attendance 68%)</p>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#627083] block mb-1">
+                      Attention Flagged
+                    </span>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#B91C1C] font-display">
+                        1
+                      </span>
+                      <span className="text-xs font-bold text-[#B91C1C]">Critical</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
+                    <span className="truncate">Aarav Sharma</span>
+                    <span className="font-bold text-[#B91C1C]">Attn: 68.0%</span>
+                  </div>
                 </div>
 
-                <div className="bg-[#FFFDF8] rounded-2xl p-5 border border-[#E2D7C6] shadow-xs space-y-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#5A6E7F]">Avg Batch CGPA</span>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#102A43]">8.42</span>
-                    <span className="text-xs font-bold text-[#15803D]">Top Tier</span>
+                {/* Stat 4: Avg Batch CGPA */}
+                <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 border border-[#0C2238]/08 shadow-xs hover:shadow-md hover:border-[#C99632]/40 transition-all duration-300 flex flex-col justify-between space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-2xl bg-[#DCFCE7] border border-[#BBF7D0] flex items-center justify-center text-[#15803D] shadow-2xs">
+                      <TrendingUp className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-extrabold tracking-wide">
+                      TOP 5% BATCH
+                    </span>
                   </div>
-                  <p className="text-[11px] text-[#5A6E7F]">91.2% Batch Attendance Avg</p>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#627083] block mb-1">
+                      Avg Batch CGPA
+                    </span>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
+                        8.42
+                      </span>
+                      <span className="text-xs font-bold text-[#15803D]">Top Tier</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
+                    <span>Batch Attendance</span>
+                    <span className="font-bold text-[#10253A]">91.2% Avg</span>
+                  </div>
                 </div>
+
               </div>
 
-              {/* MAIN 2-COLUMN GRID */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* MAIN 2-COLUMN STRUCTURED BENTO LAYOUT */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
-                {/* LEFT COLUMN (7 COLS): INCOMING MENTOR REQUESTS & ATTENTION CENTER */}
+                {/* LEFT COLUMN (7 COLS): INCOMING REQUESTS & DETAILED MENTEE ROSTER */}
                 <div className="lg:col-span-7 space-y-6">
                   
                   {/* INCOMING MENTOR REQUESTS CARD */}
-                  <div className="bg-[#FFFDF8] rounded-2xl p-6 border border-[#E2D7C6] shadow-xs space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <UserCheck className="w-5 h-5 text-[#123B63]" />
-                        <h3 className="text-base font-extrabold text-[#102A43]">Incoming Student Mentor Requests</h3>
+                  <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 sm:p-7 border border-[#0C2238]/08 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between border-b border-[#0C2238]/06 pb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-9 h-9 rounded-xl bg-[#EFE7D8] flex items-center justify-center text-[#0C2238]">
+                          <UserCheck className="w-4.5 h-4.5 text-[#0C2238]" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-extrabold text-[#10253A] tracking-tight">Incoming Mentorship Applications</h3>
+                          <p className="text-[11px] text-[#627083]">Matched deterministically against research domain and curriculum</p>
+                        </div>
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-full bg-[#FEF3C7] text-[#D97706] text-[10px] font-bold">
+                      <span className="px-3 py-1 rounded-full bg-[#FEF3C7] text-[#D97706] text-[10px] font-black uppercase tracking-wider">
                         {pendingRequestsCount} PENDING
                       </span>
                     </div>
 
                     {storeState.mentorRequests.filter((r: MentorRequest) => r.status === 'PENDING').length === 0 ? (
-                      <p className="text-xs text-[#5A6E7F] italic p-4 bg-[#F7F2E9] rounded-xl text-center">
-                        No pending mentor requests at this time.
-                      </p>
+                      <div className="p-6 bg-[#F7F4EE]/70 rounded-2xl border border-dashed border-[#0C2238]/10 text-center space-y-1">
+                        <CheckCircle2 className="w-6 h-6 text-[#159A72] mx-auto mb-1" />
+                        <p className="text-xs font-bold text-[#10253A]">All Applications Processed</p>
+                        <p className="text-[11px] text-[#627083]">No pending student mentorship requests in queue.</p>
+                      </div>
                     ) : (
                       storeState.mentorRequests.filter((r: MentorRequest) => r.status === 'PENDING').map((req: MentorRequest) => (
-                        <div key={req.id} className="p-4 rounded-xl bg-[#F7F2E9] border border-[#E2D7C6] space-y-3">
+                        <div key={req.id} className="p-5 rounded-2xl bg-[#F7F4EE] border border-[#0C2238]/08 space-y-3.5 hover:border-[#C99632]/40 transition-colors">
                           <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-extrabold text-[#102A43] text-sm">{req.studentName}</p>
-                              <p className="text-xs text-[#5A6E7F]">ID: {req.studentId} • {req.branch} ({req.semester})</p>
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 rounded-xl bg-[#0C2238] text-[#E8C56B] flex items-center justify-center font-bold text-xs shadow-xs">
+                                {req.studentName.split(' ').map((n: string) => n[0]).join('')}
+                              </div>
+                              <div>
+                                <p className="font-extrabold text-[#10253A] text-sm">{req.studentName}</p>
+                                <p className="text-[11px] text-[#627083]">ID: {req.studentId} • {req.branch} ({req.semester})</p>
+                              </div>
                             </div>
-                            <span className="text-xs font-bold text-[#15803D] bg-[#DCFCE7] px-2.5 py-1 rounded-full">
+                            <span className="text-xs font-extrabold text-[#15803D] bg-[#DCFCE7] px-3 py-1 rounded-full border border-[#BBF7D0]">
                               {req.matchScore}% Match
                             </span>
                           </div>
 
-                          <div className="p-3 rounded-xl bg-[#FFFDF8] border border-[#E2D7C6] text-xs space-y-1">
-                            <p className="font-bold text-[#102A43]">Selected Goal: {req.goal}</p>
-                            <p className="text-[#123B63] font-semibold">Match Breakdown: {req.matchReason}</p>
+                          <div className="p-3.5 rounded-xl bg-[#FFFCF7] border border-[#0C2238]/06 text-xs space-y-1.5">
+                            <p className="font-bold text-[#10253A] flex items-center space-x-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#C99632]" />
+                              <span>Goal: {req.goal}</span>
+                            </p>
+                            <p className="text-[#627083] font-medium pl-3">{req.matchReason}</p>
                             {req.note && (
-                              <p className="text-[#5A6E7F] italic pt-1 border-t border-[#E2D7C6]">
-                                "Student Note: {req.note}"
+                              <p className="text-[#627083] italic pt-1.5 border-t border-[#0C2238]/06 pl-3">
+                                "{req.note}"
                               </p>
                             )}
                           </div>
 
-                          <div className="flex justify-end space-x-2 pt-1 text-xs">
+                          <div className="flex justify-end space-x-2.5 pt-1">
                             <button
                               onClick={() => setDeclineModal(req)}
-                              className="px-4 py-2 rounded-xl bg-[#E9DDC9] text-[#102A43] font-bold cursor-pointer"
+                              className="px-4 py-2 rounded-xl bg-[#EFE7D8] hover:bg-[#E2D7C6] text-[#10253A] font-extrabold text-xs cursor-pointer transition-colors"
                             >
                               Decline
                             </button>
                             <button
                               onClick={() => setAcceptConfirmModal(req)}
-                              className="px-5 py-2 rounded-xl bg-[#123B63] hover:bg-[#1D4E73] text-white font-bold cursor-pointer"
+                              className="px-5 py-2 rounded-xl bg-[#0C2238] hover:bg-[#123B63] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center space-x-1.5"
                             >
-                              Accept Request →
+                              <span>Accept Mentee</span>
+                              <ChevronRight className="w-3.5 h-3.5 text-[#E8C56B]" />
                             </button>
                           </div>
                         </div>
@@ -830,43 +923,61 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) =
                   </div>
 
                   {/* MENTEE ROSTER OVERVIEW TABLE */}
-                  <div className="bg-[#FFFDF8] rounded-2xl p-6 border border-[#E2D7C6] shadow-xs space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-base font-extrabold text-[#102A43]">Assigned Mentees Roster</h3>
+                  <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 sm:p-7 border border-[#0C2238]/08 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between border-b border-[#0C2238]/06 pb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-9 h-9 rounded-xl bg-[#EFE7D8] flex items-center justify-center text-[#0C2238]">
+                          <GraduationCap className="w-4.5 h-4.5 text-[#0C2238]" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-extrabold text-[#10253A] tracking-tight">Assigned Mentee Cohort Roster</h3>
+                          <p className="text-[11px] text-[#627083]">Live attendance telemetry and academic performance</p>
+                        </div>
+                      </div>
                       <button 
                         onClick={() => setActiveNav('My Students')}
-                        className="text-xs font-bold text-[#123B63] hover:underline"
+                        className="text-xs font-extrabold text-[#0C2238] hover:text-[#C99632] transition-colors flex items-center space-x-1"
                       >
-                        View All Mentees ({allMentees.length}) →
+                        <span>View All ({allMentees.length})</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto rounded-2xl border border-[#0C2238]/08">
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
-                          <tr className="border-b border-[#E2D7C6] text-[#5A6E7F]">
-                            <th className="py-2.5 px-3 font-bold">STUDENT</th>
-                            <th className="py-2.5 px-3 font-bold">CGPA</th>
-                            <th className="py-2.5 px-3 font-bold">ATTENDANCE</th>
-                            <th className="py-2.5 px-3 font-bold">STATUS</th>
-                            <th className="py-2.5 px-3 font-bold">ACTION</th>
+                          <tr className="bg-[#F7F4EE] border-b border-[#0C2238]/08 text-[#627083]">
+                            <th className="py-3 px-4 font-black uppercase text-[10px] tracking-wider">STUDENT</th>
+                            <th className="py-3 px-3 font-black uppercase text-[10px] tracking-wider">CGPA</th>
+                            <th className="py-3 px-3 font-black uppercase text-[10px] tracking-wider">ATTENDANCE</th>
+                            <th className="py-3 px-3 font-black uppercase text-[10px] tracking-wider">STATUS</th>
+                            <th className="py-3 px-4 font-black uppercase text-[10px] tracking-wider text-right">ACTION</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#E2D7C6]">
+                        <tbody className="divide-y divide-[#0C2238]/06 bg-white/60">
                           {allMentees.map((m) => (
-                            <tr key={m.id} className="hover:bg-[#F7F2E9]">
-                              <td className="py-3 px-3">
-                                <p className="font-bold text-[#102A43]">{m.name}</p>
-                                <p className="text-[10px] text-[#5A6E7F]">{m.roll} • {m.branch}</p>
+                            <tr key={m.id} className="hover:bg-[#F7F4EE]/70 transition-colors">
+                              <td className="py-3.5 px-4">
+                                <div className="flex items-center space-x-2.5">
+                                  <div className="w-8 h-8 rounded-xl bg-[#EFE7D8] text-[#0C2238] flex items-center justify-center font-bold text-xs shrink-0">
+                                    {m.name.split(' ').map((n: string) => n[0]).join('')}
+                                  </div>
+                                  <div>
+                                    <p className="font-extrabold text-[#10253A]">{m.name}</p>
+                                    <p className="text-[10px] text-[#627083]">{m.roll} • {m.branch}</p>
+                                  </div>
+                                </div>
                               </td>
-                              <td className="py-3 px-3 font-bold text-[#102A43]">{m.cgpa.toFixed(2)}</td>
-                              <td className="py-3 px-3 font-bold">
+                              <td className="py-3.5 px-3 font-extrabold text-[#10253A]">
+                                {m.cgpa.toFixed(2)}
+                              </td>
+                              <td className="py-3.5 px-3 font-extrabold">
                                 <span className={m.attendance < 75 ? 'text-[#B91C1C]' : 'text-[#15803D]'}>
                                   {m.attendance.toFixed(1)}%
                                 </span>
                               </td>
-                              <td className="py-3 px-3">
-                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                              <td className="py-3.5 px-3">
+                                <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${
                                   m.severity === 'CRITICAL' 
                                     ? 'bg-[#FEE2E2] text-[#B91C1C]' 
                                     : m.severity === 'WARNING'
@@ -876,12 +987,12 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) =
                                   {m.status}
                                 </span>
                               </td>
-                              <td className="py-3 px-3">
+                              <td className="py-3.5 px-4 text-right">
                                 <button
                                   onClick={() => setSelectedStudent(m)}
-                                  className="px-2.5 py-1 rounded-lg bg-[#123B63] text-white font-bold text-[10px]"
+                                  className="px-3 py-1.5 rounded-xl bg-[#0C2238] hover:bg-[#123B63] text-white font-extrabold text-[11px] shadow-xs hover:shadow-md transition-all cursor-pointer"
                                 >
-                                  View Student →
+                                  View Dossier →
                                 </button>
                               </td>
                             </tr>
@@ -897,78 +1008,109 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) =
                 <div className="lg:col-span-5 space-y-6">
                   
                   {/* LOG SESSION FEEDBACK BUTTON & ACTION CARD */}
-                  <div className="bg-[#FFFDF8] rounded-2xl p-6 border border-[#E2D7C6] shadow-xs space-y-3">
-                    <h3 className="text-base font-extrabold text-[#102A43]">Mentoring Workspace Actions</h3>
-                    <p className="text-xs text-[#5A6E7F]">Record 1-on-1 session feedback or schedule next check-in</p>
+                  <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 sm:p-7 border border-[#0C2238]/08 shadow-xs space-y-4">
+                    <div className="flex items-center space-x-3 border-b border-[#0C2238]/06 pb-3">
+                      <div className="w-9 h-9 rounded-xl bg-[#EFE7D8] flex items-center justify-center text-[#0C2238]">
+                        <Sliders className="w-4.5 h-4.5 text-[#0C2238]" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-extrabold text-[#10253A] tracking-tight">Mentoring Workspace Actions</h3>
+                        <p className="text-[11px] text-[#627083]">Log continuous feedback or schedule sessions</p>
+                      </div>
+                    </div>
                     
-                    <div className="space-y-2">
+                    <div className="space-y-2.5 pt-1">
                       <button
                         onClick={() => {
                           setSessionMentee(allMentees[0]);
                           setShowSessionModal(true);
                         }}
-                        className="w-full py-2.5 rounded-xl bg-[#123B63] hover:bg-[#1D4E73] text-white font-bold text-xs flex items-center justify-center space-x-2 cursor-pointer"
+                        className="w-full py-3 px-4 rounded-2xl bg-[#0C2238] hover:bg-[#123B63] text-white font-extrabold text-xs flex items-center justify-between shadow-md hover:shadow-lg transition-all cursor-pointer group"
                       >
-                        <FileText className="w-4 h-4 text-[#F5C056]" />
-                        <span>Log 1-on-1 Mentoring Session →</span>
+                        <div className="flex items-center space-x-2.5">
+                          <FileText className="w-4 h-4 text-[#E8C56B]" />
+                          <span>Log 1-on-1 Mentoring Session</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </button>
 
                       <button
                         onClick={() => setShowScheduleMeetingModal(true)}
-                        className="w-full py-2.5 rounded-xl bg-[#E9DDC9] hover:bg-[#E2D7C6] text-[#102A43] font-bold text-xs flex items-center justify-center space-x-2 cursor-pointer"
+                        className="w-full py-3 px-4 rounded-2xl bg-[#EFE7D8]/90 hover:bg-[#E2D7C6] text-[#10253A] font-extrabold text-xs flex items-center justify-between border border-[#0C2238]/08 transition-all cursor-pointer group"
                       >
-                        <Calendar className="w-4 h-4 text-[#123B63]" />
-                        <span>Schedule 1-on-1 Check-in Meeting</span>
+                        <div className="flex items-center space-x-2.5">
+                          <Calendar className="w-4 h-4 text-[#0C2238]" />
+                          <span>Schedule 1-on-1 Check-in Meeting</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </div>
                   </div>
 
                   {/* SCHEDULED MEETINGS & AGENDA */}
-                  <div className="bg-[#FFFDF8] rounded-2xl p-6 border border-[#E2D7C6] shadow-xs space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-base font-extrabold text-[#102A43]">Scheduled Mentoring Meetings</h3>
-                      <span className="px-2.5 py-0.5 rounded-full bg-[#E9DDC9] text-[#102A43] text-[10px] font-bold">
-                        SHARED CALENDAR
+                  <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 sm:p-7 border border-[#0C2238]/08 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between border-b border-[#0C2238]/06 pb-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-9 h-9 rounded-xl bg-[#EFE7D8] flex items-center justify-center text-[#0C2238]">
+                          <Calendar className="w-4.5 h-4.5 text-[#0C2238]" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-extrabold text-[#10253A] tracking-tight">Scheduled Mentoring Sessions</h3>
+                          <p className="text-[11px] text-[#627083]">Calendar sync & student review agenda</p>
+                        </div>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full bg-[#EFE7D8] text-[#10253A] text-[10px] font-extrabold">
+                        CALENDAR
                       </span>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-3 pt-1">
                       {storeState.meetings.map((mtg: MentoringMeeting) => (
-                        <div key={mtg.id} className="p-3.5 rounded-xl bg-[#F7F2E9] border border-[#E2D7C6] space-y-1.5 text-xs">
+                        <div key={mtg.id} className="p-4 rounded-2xl bg-[#F7F4EE] border border-[#0C2238]/08 space-y-2 text-xs hover:border-[#C99632]/40 transition-colors">
                           <div className="flex items-center justify-between font-bold">
-                            <span className="text-[#102A43]">{mtg.studentName}</span>
-                            <span className="px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] text-[9px]">
+                            <span className="text-[#10253A] font-extrabold text-sm">{mtg.studentName}</span>
+                            <span className="px-2.5 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-black uppercase">
                               {mtg.status}
                             </span>
                           </div>
-                          <p className="text-[#123B63] font-semibold">{mtg.title}</p>
-                          <p className="text-[10px] text-[#C49A52]">{mtg.date}</p>
+                          <p className="text-[#0C2238] font-bold">{mtg.title}</p>
+                          <div className="flex items-center justify-between text-[11px] text-[#627083] pt-1 border-t border-[#0C2238]/06">
+                            <span>{mtg.date}</span>
+                            <span className="text-[#C99632] font-extrabold">Room M-304</span>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* AI MENTOR ADVISORY INSIGHT CARD */}
-                  <div className="bg-[#123B63] text-white rounded-2xl p-6 border border-[#C49A52]/40 shadow-md space-y-4">
+                  <div className="bg-gradient-to-br from-[#0C2238] via-[#123B63] to-[#07182A] text-white rounded-3xl p-6 sm:p-7 border border-[#C99632]/40 shadow-xl space-y-4 relative overflow-hidden">
+                    <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-[#C99632]/15 rounded-full blur-2xl pointer-events-none" />
+                    
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Sparkles className="w-5 h-5 text-[#F5C056]" />
-                        <h3 className="text-base font-extrabold text-white">✦ AI Mentoring Advisory</h3>
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center border border-[#C99632]/40">
+                          <Sparkles className="w-4 h-4 text-[#E8C56B]" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-black text-white tracking-tight">✦ AI Mentoring Advisory</h3>
+                          <p className="text-[10px] text-slate-300">Continuous Curriculum Analysis</p>
+                        </div>
                       </div>
-                      <span className="px-2 py-0.5 rounded-full bg-[#C49A52]/30 text-[9px] font-extrabold text-[#F5C056]">
-                        FACULTY COPILOT
+                      <span className="px-2.5 py-0.5 rounded-full bg-[#C99632]/30 text-[9px] font-black text-[#E8C56B] uppercase tracking-wider">
+                        RAG INSIGHT
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-200 leading-relaxed">
-                      "Prof. Kulkarni, Krishna Singh has a 96% match score and requested mentorship for AI/ML and PostgreSQL RAG capstone guidance. Accepting this request aligns with your research lab goals."
+                    <p className="text-xs text-slate-200 leading-relaxed bg-white/5 p-3.5 rounded-2xl border border-white/10">
+                      "Prof. Kulkarni, Krishna Singh has a 96% match score and requested mentorship for AI/ML and PostgreSQL RAG capstone guidance. Accepting this request directly supports CS503 curriculum goals."
                     </p>
 
                     <button
-                      onClick={() => setAiDrawerOpen(true)}
-                      className="w-full py-2 rounded-xl bg-[#F5C056] text-[#102A43] font-bold text-xs hover:bg-[#E5B046]"
+                      onClick={() => setActiveNav('AI Mentor Assistant')}
+                      className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#C99632] to-[#E8C56B] text-[#0C2238] font-extrabold text-xs hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
                     >
-                      Open Faculty Copilot
+                      Open Full ChatGPT AI Assistant →
                     </button>
                   </div>
 

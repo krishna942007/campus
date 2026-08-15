@@ -677,73 +677,121 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
           {activeNav === 'Overview' && (
             <div className="space-y-6">
               
-              {/* 4 REAL METRIC CARDS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* 4 EXECUTIVE KPI STAT METRICS BENTO */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 
-                <div className="bg-[#FFFDF8] rounded-2xl p-5 border border-[#E2D7C6] shadow-xs space-y-2">
+                {/* Stat 1: Current CGPA */}
+                <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 border border-[#0C2238]/08 shadow-xs hover:shadow-md hover:border-[#C99632]/40 transition-all duration-300 flex flex-col justify-between space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#5A6E7F]">Current CGPA</span>
-                    <span className="px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] text-[9px] font-bold">
+                    <div className="w-10 h-10 rounded-2xl bg-[#DCFCE7] border border-[#BBF7D0] flex items-center justify-center text-[#15803D] shadow-2xs">
+                      <GraduationCap className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-extrabold tracking-wide">
                       OFFICIAL RECORD
                     </span>
                   </div>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#102A43]">8.92</span>
-                    <span className="text-xs font-bold text-[#15803D]">Top 5%</span>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#627083] block mb-1">
+                      Current CGPA
+                    </span>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
+                        8.92
+                      </span>
+                      <span className="text-xs font-bold text-[#159A72]">Top 5%</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-[#5A6E7F]">
-                    Formula: (8.50×20 + 8.80×20 + 8.90×22 + 9.14×22) / 84
-                  </p>
+                  <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
+                    <span>Weighted Credits</span>
+                    <span className="font-bold text-[#10253A]">84 Earned</span>
+                  </div>
                 </div>
 
-                <div className="bg-[#FFFDF8] rounded-2xl p-5 border border-[#E2D7C6] shadow-xs space-y-2">
+                {/* Stat 2: Attendance % */}
+                <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 border border-[#0C2238]/08 shadow-xs hover:shadow-md hover:border-[#C99632]/40 transition-all duration-300 flex flex-col justify-between space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#5A6E7F]">Attendance %</span>
-                    <span className="px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] text-[9px] font-bold">
-                      SYNCED FROM VIT
+                    <div className="w-10 h-10 rounded-2xl bg-[#EEF2FF] border border-[#E0E7FF] flex items-center justify-center text-[#4F46E5] shadow-2xs">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-extrabold tracking-wide">
+                      ELIGIBLE (75%+)
                     </span>
                   </div>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#123B63]">91.4%</span>
-                    <span className="text-xs font-bold text-[#15803D]">Eligible</span>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#627083] block mb-1">
+                      Attendance Rate
+                    </span>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
+                        91.4%
+                      </span>
+                      <span className="text-xs font-bold text-[#159A72]">Safe</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-[#5A6E7F]">
-                    Formula: 113 attended / 126 total classes
-                  </p>
+                  <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
+                    <span>Classes Attended</span>
+                    <span className="font-bold text-[#10253A]">113 / 126</span>
+                  </div>
                 </div>
 
-                <div className="bg-[#FFFDF8] rounded-2xl p-5 border border-[#E2D7C6] shadow-xs space-y-2">
+                {/* Stat 3: Academic Stage */}
+                <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 border border-[#0C2238]/08 shadow-xs hover:shadow-md hover:border-[#C99632]/40 transition-all duration-300 flex flex-col justify-between space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#5A6E7F]">Academic Stage</span>
-                    <span className="px-2 py-0.5 rounded-full bg-[#E9DDC9] text-[#102A43] text-[9px] font-bold">
-                      SEMESTER IV
+                    <div className="w-10 h-10 rounded-2xl bg-[#FEF3C7] border border-[#FDE68A] flex items-center justify-center text-[#D97706] shadow-2xs">
+                      <BookOpen className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#EFE7D8] text-[#10253A] text-[10px] font-extrabold tracking-wide">
+                      YEAR 2
                     </span>
                   </div>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#102A43]">Sem IV</span>
-                    <span className="text-xs font-bold text-[#123B63]">Year 2</span>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#627083] block mb-1">
+                      Academic Stage
+                    </span>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
+                        Sem IV
+                      </span>
+                      <span className="text-xs font-bold text-[#0C2238]">Div A</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-[#5A6E7F]">Target Graduation: May 2027</p>
+                  <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
+                    <span>Graduation Batch</span>
+                    <span className="font-bold text-[#10253A]">May 2027</span>
+                  </div>
                 </div>
 
-                <div className="bg-[#FFFDF8] rounded-2xl p-5 border border-[#E2D7C6] shadow-xs space-y-2">
+                {/* Stat 4: Dev Progress */}
+                <div className="bg-[#FFFCF7]/95 backdrop-blur-xl rounded-3xl p-6 border border-[#0C2238]/08 shadow-xs hover:shadow-md hover:border-[#C99632]/40 transition-all duration-300 flex flex-col justify-between space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#5A6E7F]">Dev Progress</span>
-                    <span className="px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#D97706] text-[9px] font-bold">
-                      STUDENT PROVIDED
+                    <div className="w-10 h-10 rounded-2xl bg-[#E0E7FF] border border-[#C7D2FE] flex items-center justify-center text-[#4338CA] shadow-2xs">
+                      <Target className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#FEF3C7] text-[#D97706] text-[10px] font-extrabold tracking-wide">
+                      ON TRACK
                     </span>
                   </div>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#102A43]">72%</span>
-                    <span className="text-xs font-bold text-[#D97706]">On Track</span>
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#627083] block mb-1">
+                      Roadmap Completion
+                    </span>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
+                        72%
+                      </span>
+                      <span className="text-xs font-bold text-[#D97706]">2 / 5 Done</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-[#5A6E7F]">2 / 5 Milestones Completed</p>
+                  <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
+                    <span>Career Milestone</span>
+                    <span className="font-bold text-[#159A72]">RAG Capstone</span>
+                  </div>
                 </div>
 
               </div>
 
-              {/* MAIN 2-COLUMN GRID */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* MAIN 2-COLUMN STRUCTURED BENTO LAYOUT */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
                 {/* LEFT COLUMN (7 COLS): CGPA TREND, NEXT BEST ACTIONS, ATTENDANCE */}
                 <div className="lg:col-span-7 space-y-6">
