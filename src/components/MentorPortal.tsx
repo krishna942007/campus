@@ -51,6 +51,7 @@ import {
   AssignedOnlineCourse
 } from '../services/mentoringStore';
 import { ToastNotification, ToastMessage } from './ToastNotification';
+import { ChatGPTAIWorkspace } from './ChatGPTAIWorkspace';
 
 interface MentorPortalProps {
   onBackToLanding: () => void;
@@ -623,9 +624,8 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) =
                   key={item.name}
                   onClick={() => {
                     setActiveNav(item.name as any);
-                    if (item.name === 'AI Mentor Assistant') setAiDrawerOpen(true);
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
                     isActive
                       ? 'bg-[#123B63] text-white shadow-sm font-bold'
                       : 'text-[#102A43] hover:bg-[#E9DDC9]/50'
@@ -1603,6 +1603,17 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) =
                   <input type="checkbox" defaultChecked className="w-5 h-5 accent-[#123B63]" />
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* VIEW: FULL CHATGPT-STYLE AI OPERATIONS ASSISTANT FOR MENTOR */}
+          {activeNav === 'AI Mentor Assistant' && (
+            <div className="space-y-4">
+              <ChatGPTAIWorkspace 
+                userName="Prof. S. Kulkarni" 
+                userRole="MENTOR" 
+                onToast={addToast} 
+              />
             </div>
           )}
 

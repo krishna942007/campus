@@ -10,6 +10,8 @@ import { StudentDashboardStory } from './components/StudentDashboardStory';
 import { AIAssistantSection } from './components/AIAssistantSection';
 import { LearningRoadmapSection } from './components/LearningRoadmapSection';
 import { SkillGapSection } from './components/SkillGapSection';
+import { ToastNotification, ToastMessage } from './components/ToastNotification';
+import { FloatingAIWidget } from './components/FloatingAIWidget';
 import { MentoringSection } from './components/MentoringSection';
 import { AcademicAttendanceSection } from './components/AcademicAttendanceSection';
 import { VITKnowledgeRAG } from './components/VITKnowledgeRAG';
@@ -199,6 +201,9 @@ export function App() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Global Movable Floating AI Circle Widget */}
+      <FloatingAIWidget />
     </div>
   );
 }

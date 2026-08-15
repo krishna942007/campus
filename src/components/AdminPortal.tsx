@@ -54,6 +54,7 @@ import {
 
 import { ToastNotification, ToastMessage } from './ToastNotification';
 import { getMentoringStore, saveMentoringStore, MentorRequest } from '../services/mentoringStore';
+import { ChatGPTAIWorkspace } from './ChatGPTAIWorkspace';
 
 interface AdminPortalProps {
   onBackToLanding: () => void;
@@ -552,7 +553,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToLanding }) => 
 
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => setAiDrawerOpen(true)}
+              onClick={() => setActiveNav('AI Configuration')}
               className="flex items-center space-x-2 px-4 py-2 rounded-full bg-[#123B63] hover:bg-[#1D4E73] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-[#F5C056]" />
@@ -1502,6 +1503,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToLanding }) => 
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* LIVE CHATGPT-STYLE ADMIN OPERATIONS COPILOT WORKSPACE */}
+              <div className="pt-2">
+                <ChatGPTAIWorkspace 
+                  userName="Super Admin" 
+                  userRole="ADMIN" 
+                  onToast={addToast} 
+                />
               </div>
             </div>
           )}

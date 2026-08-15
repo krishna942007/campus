@@ -26,7 +26,7 @@ export const CleanHero: React.FC<CleanHeroProps> = ({ onSelectRole }) => {
     <section 
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full bg-[#F7F4EE] bg-no-repeat overflow-hidden pt-10 pb-10 min-h-[920px] lg:min-h-[1050px] flex flex-col justify-between"
+      className="relative w-full bg-[#F7F4EE] bg-no-repeat overflow-hidden pt-2 sm:pt-4 pb-6 min-h-[860px] lg:min-h-[960px] flex flex-col justify-between"
       style={{ 
         backgroundImage: "url('/bg.png')",
         backgroundSize: '100% 100%',
@@ -35,8 +35,12 @@ export const CleanHero: React.FC<CleanHeroProps> = ({ onSelectRole }) => {
         transition: 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1)'
       }}
     >
+      {/* Soft gradient blend overlays to connect seamlessly with adjacent sections */}
+      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#F7F4EE]/60 to-transparent pointer-events-none z-1" />
+      <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#F7F4EE] via-[#F7F4EE]/60 to-transparent pointer-events-none z-10" />
+
       {/* Upper Hero Grid */}
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full pt-4 pb-6 flex-1">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center w-full pt-1 pb-4 flex-1">
         
         {/* Left Headline Column with Staggered Entrance Animations */}
         <div className="lg:col-span-7 space-y-7 z-10 py-6">
