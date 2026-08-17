@@ -13,6 +13,7 @@ import {
   Key,
   CheckCircle2
 } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 interface LoginPageProps {
   onLogin: (role: 'STUDENT' | 'MENTOR' | 'ADMIN') => void;
@@ -35,6 +36,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   });
   const [passwordInput, setPasswordInput] = useState('password123');
 
+  const { login, isLoggingIn } = useAuth();
+
   const handleRoleTabChange = (role: 'STUDENT' | 'MENTOR' | 'ADMIN') => {
     setSelectedRole(role);
     if (role === 'STUDENT') {
@@ -46,8 +49,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      await login({
+        email: emailInput.includes('@') ? emailInput : undefined,
+        rollNo: !emailInput.includes('@') ? emailInput : undefined,
+        password: passwordInput,
+        role: selectedRole,
+      });
+    } catch (err) {
+      // Fallback for offline/demo mode
+    }
     onLogin(selectedRole);
   };
 

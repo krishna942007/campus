@@ -1,34 +1,15 @@
 {
-  "name": "vitara-college-platform",
+  "name": "vitara-platform",
   "private": true,
   "version": "2.0.0",
-  "type": "module",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "canvas-confetti": "^1.9.4",
-    "clsx": "^2.1.1",
-    "framer-motion": "^11.15.0",
-    "lenis": "^1.3.26",
-    "lucide-react": "^0.469.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "recharts": "^2.15.0",
-    "tailwind-merge": "^2.6.0"
-  },
-  "devDependencies": {
-    "@types/canvas-confetti": "^1.9.0",
-    "@types/node": "^22.10.2",
-    "@types/react": "^18.3.18",
-    "@types/react-dom": "^18.3.5",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.5"
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "dev:backend": "npm --prefix backend run dev",
+    "build:backend": "npm --prefix backend run build"
   }
 }
