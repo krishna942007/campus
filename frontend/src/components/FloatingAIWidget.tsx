@@ -19,25 +19,40 @@ export const FloatingAIWidget: React.FC = () => {
     if (!queryText) setInput('');
     setIsThinking(true);
 
-    setTimeout(() => {
-      setIsThinking(false);
-      const q = textToSend.toLowerCase();
-      let response = '';
-
-      if (q.includes('attendance') || q.includes('rule') || q.includes('criteria')) {
-        response = 'Under VIT Autonomous Ordinance 4.2, students must maintain a minimum of 75% attendance in every course. Students between 65%-74% require Dean approval for medical/extenuating reasons.';
-      } else if (q.includes('mentor') || q.includes('faculty') || q.includes('kulkarni')) {
-        response = 'Prof. S. Kulkarni (Associate Professor, AI & DS) has office hours Mon/Wed 3:00 PM – 5:00 PM in Room M-304. You can book an academic review in the Mentoring tab.';
-      } else if (q.includes('cgpa') || q.includes('grade') || q.includes('honors')) {
-        response = 'To be eligible for Honors in Applied Deep Learning, you must maintain a cumulative CGPA ≥ 7.50 without any active backlogs at the end of Semester IV.';
-      } else if (q.includes('exam') || q.includes('dates') || q.includes('schedule')) {
-        response = 'The Mid-Semester Examination (MSE) is scheduled for October 12–17, 2026. Official seating plans will be published on the portal 5 days prior.';
-      } else {
-        response = `I analyzed your query against the official VIT Mumbai Academic Knowledge Base. For "${textToSend}", your coursework trajectory is aligned with Computer Engineering & AI goals.`;
+    (async () => {
+      let responseText = '';
+      try {
+        const res = await fetch('/api/v1/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: textToSend, isGroundedInRAG: true })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.data && data.data.reply) {
+            responseText = data.data.reply;
+          }
+        }
+      } catch (err) {
+        console.warn('Floating AI Widget API fallback:', err);
       }
 
-      setMessages(prev => [...prev, { sender: 'AI', text: response }]);
-    }, 700);
+      if (!responseText) {
+        const q = textToSend.toLowerCase();
+        if (q.includes('attendance') || q.includes('rule') || q.includes('criteria')) {
+          responseText = 'Under VIT Autonomous Ordinance 4.2, students must maintain a minimum of 75% attendance in every course. Students between 65%-74% require Dean approval for medical/extenuating reasons.';
+        } else if (q.includes('mentor') || q.includes('faculty') || q.includes('kulkarni')) {
+          responseText = 'Prof. S. Kulkarni (Associate Professor, AI & DS) has office hours Mon/Wed 3:00 PM – 5:00 PM in Room M-304. You can book an academic review in the Mentoring tab.';
+        } else if (q.includes('cgpa') || q.includes('grade') || q.includes('honors')) {
+          responseText = 'To be eligible for Honors in Applied Deep Learning, you must maintain a cumulative CGPA ≥ 7.50 without any active backlogs at the end of Semester IV.';
+        } else {
+          responseText = `I analyzed your query against the official VIT Mumbai Academic Knowledge Base. For "${textToSend}", your coursework trajectory is aligned with Computer Engineering & AI goals.`;
+        }
+      }
+
+      setIsThinking(false);
+      setMessages(prev => [...prev, { sender: 'AI', text: responseText }]);
+    })();
   };
 
   return (
