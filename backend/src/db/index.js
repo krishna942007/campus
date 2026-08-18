@@ -8,9 +8,11 @@ const connectDB = async () => {
     console.log(
       `\n⚙️ MongoDB connected !! DB HOST: ${connectionInstance.connection.host}`
     );
+    return connectionInstance;
   } catch (error) {
-    console.log("MONGODB connection FAILED: ", error);
-    process.exit(1);
+    console.warn("⚠️ MONGODB Connection Warning: Local MongoDB is offline or MONGODB_URI is unconfigured.");
+    console.warn("   Backend server will run in standalone Mode with in-memory state fallback.");
+    return null;
   }
 };
 
