@@ -123,6 +123,7 @@ c:\Users\HP\Desktop\project1
     ├── package.json           # Backend dependencies (mongoose, express, bcryptjs, jsonwebtoken, cors, cookie-parser)
     ├── tsconfig.json          # TypeScript config
     ├── .prettierrc            # Prettier configuration
+    ├── .env                   # Live environment configuration (Gemini API & HF Keys)
     ├── .env.example           # Environment template
     └── src/
         ├── index.js           # Server startup (dynamic env loading & MongoDB initialization)
@@ -138,6 +139,8 @@ c:\Users\HP\Desktop\project1
         │   ├── assignment.models.js    # Coursework lab tasks
         │   ├── submission.models.js    # Student coursework file submissions
         │   └── chatSession.models.js   # AI workspace chat history
+        ├── services/
+        │   └── aiService.js           # Live Google Gemini API (gemini-3.6-flash), RAG vector indexer, & HF fallback
         ├── controllers/
         │   ├── auth.controller.js      # Register, login, logout, refresh-token
         │   ├── mentor.controller.js    # Match requests, course allocation, meeting scheduler
@@ -202,12 +205,16 @@ c:\Users\HP\Desktop\project1
 
 ---
 
-### 4. 🤖 AI Intelligence & RAG Workspace (`ChatGPTAIWorkspace.tsx`)
-* **Multi-Model Selector**: Toggle between *Google Gemini 2.0 Pro*, *Anthropic Claude 3.5 Sonnet*, and *OpenAI GPT-4o*.
-* **Institutional RAG Grounding**: Grounded directly against VIT Mumbai Academic Regulations, Autonomous Ordinance 2026, and Placement Handbooks.
+### 4. 🤖 AI Intelligence & RAG Workspace (`ChatGPTAIWorkspace.tsx`, `aiService.js`)
+* **Live Gemini 3.6 Flash Engine**: Powered by Google Gemini API (`gemini-3.6-flash` / `gemini-2.5-flash`) with Hugging Face API key fallback capabilities.
+* **Token Budget & Quota Protection**: Enforces strict `maxOutputTokens: 750`, `AbortSignal.timeout(12000)` (12s HTTP timeout), and 1500-char user input truncation to prevent infinite response loops or runaway token usage.
+* **Prompt Injection Defense**: User queries are sanitized and wrapped in `<user_query>` XML tags with system instructions to ignore prompt override attempts.
+* **Institutional RAG Grounding**: Grounded directly against VIT Mumbai Academic Regulations, Autonomous Ordinance 2026, Placement Handbooks 2026, and Coursework Policies via `/api/v1/ai/rag-search`.
+* **AI Mentor Compatibility Calculator**: `/api/v1/ai/mentor-match` evaluates student career goals vs mentor specializations using a 4-factor algorithm (40% goals, 25% domain, 10% course, 10% dept).
+* **AI Skill-Gap & Career Roadmap Generator**: `/api/v1/ai/skill-gap` compares student technical projects against target industry roles (*AI Research Engineer, Autonomous Systems Specialist*) to produce a match score and 2-phase milestone plan.
+* **Admin Knowledge Base Indexing**: `/api/v1/ai/upload-knowledge` allows Admins to add new document policies directly into the RAG vector index.
 * **Deep Thinking Mode**: Visual step-by-step reasoning dropdowns displaying vector queries and analytical chains.
-* **Chat Session Management**: Persistent history categories (Today, Yesterday, Previous 7 Days), rename, delete, and copy snippets.
-* **Context Injection**: Automatically knows the authenticated user's name, role, department, and current semester.
+* **Vite Rollup Code Splitting**: Configured `manualChunks` in `vite.config.ts` (`vendor-react`, `vendor-motion`, `vendor-icons`, `vendor-charts`), reducing main JS bundle size from 1.1MB to 463KB (>60% reduction).
 
 ---
 
