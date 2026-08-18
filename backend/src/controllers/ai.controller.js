@@ -2,9 +2,16 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ChatSession } from "../models/chatSession.models.js";
+import {
+  generateAIResponse,
+  performRAGSearch,
+  calculateMentorMatch,
+  generateSkillGapAnalysis,
+  addKnowledgeDocument,
+} from "../services/aiService.js";
 
 export const handleAIChat = asyncHandler(async (req, res) => {
-  const { prompt, model, sessionId } = req.body;
+  const { prompt, model, sessionId, isGroundedInRAG = true } = req.body;
 
   if (!prompt) {
     throw new ApiError(400, "Prompt text is required");
@@ -18,32 +25,35 @@ export const handleAIChat = asyncHandler(async (req, res) => {
   if (!session) {
     session = await ChatSession.create({
       user: req.user._id,
-      title: prompt.slice(0, 30) + "...",
-      modelUsed: model || "gemini-2.0-pro",
+      title: prompt.slice(0, 35) + "...",
+      modelUsed: model || "gemini-3.6-flash",
       messages: [],
     });
   }
 
-  // Push user prompt
   session.messages.push({
     role: "user",
     content: prompt,
     timestamp: new Date(),
   });
 
-  // Simulated structured AI Assistant response grounded in VIT context
-  const aiResponseContent = `Based on your profile as a ${req.user.role || "STUDENT"} in ${
-    req.user.department || "Computer Engineering"
-  }, here is the recommended guidance:\n\n1. Ensure your attendance stays above 75%.\n2. Focus on capstone milestone deliverables.\n3. Consult your faculty mentor for domain approval.`;
+  const userContext = {
+    name: req.user.fullName || req.user.name || "Student",
+    role: req.user.role || "STUDENT",
+    department: req.user.department || "Computer Engineering",
+  };
+
+  const { reply, thinkingSteps } = await generateAIResponse({
+    prompt,
+    userContext,
+    isGroundedInRAG,
+    model,
+  });
 
   session.messages.push({
     role: "assistant",
-    content: aiResponseContent,
-    thinkingSteps: [
-      "Extracted user context (Role, Dept, Academic Status)",
-      "Retrieved VIT Autonomous Ordinance 2026 guidelines",
-      "Synthesized response for student query",
-    ],
+    content: reply,
+    thinkingSteps: thinkingSteps || [],
     timestamp: new Date(),
   });
 
@@ -55,40 +65,73 @@ export const handleAIChat = asyncHandler(async (req, res) => {
       {
         sessionId: session._id,
         messages: session.messages,
-        reply: aiResponseContent,
+        reply,
+        thinkingSteps,
       },
-      "AI chat response generated"
+      "AI chat response generated successfully"
     )
   );
 });
 
 export const handleRAGSearch = asyncHandler(async (req, res) => {
-  const { query } = req.body;
+  const { query, category, limit } = req.body;
 
   if (!query) {
     throw new ApiError(400, "Search query is required");
   }
 
-  const ragResults = [
-    {
-      title: "VIT Autonomous Ordinance Section 4.2 — Attendance Regulations",
-      snippet:
-        "Students maintaining less than 75% aggregate attendance in any theory course are non-eligible for End Semester Examinations without formal Dean Academic approval.",
-      relevanceScore: 0.94,
-      category: "Academic Rules",
-    },
-    {
-      title: "Placement Policy 2026 — Minimum Eligibility Criteria",
-      snippet:
-        "Minimum CGPA of 6.75 with no active backlogs required for tier-1 campus placements.",
-      relevanceScore: 0.89,
-      category: "Placements",
-    },
-  ];
+  const ragResults = await performRAGSearch({ query, category, limit });
 
   return res
     .status(200)
-    .json(new ApiResponse(200, { query, results: ragResults }, "RAG search executed"));
+    .json(new ApiResponse(200, { query, results: ragResults }, "RAG search executed successfully"));
+});
+
+export const handleMentorMatch = asyncHandler(async (req, res) => {
+  const { studentGoals, studentDomain, mentorSpecialization, mentorDepartment } = req.body;
+
+  const matchData = await calculateMentorMatch({
+    studentGoals,
+    studentDomain,
+    mentorSpecialization,
+    mentorDepartment,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, matchData, "Mentor compatibility score calculated successfully"));
+});
+
+export const handleSkillGapAnalysis = asyncHandler(async (req, res) => {
+  const { studentSkills, targetRole, projects } = req.body;
+
+  const gapAnalysis = await generateSkillGapAnalysis({
+    studentSkills: studentSkills || [],
+    targetRole: targetRole || "AI Research Engineer",
+    projects: projects || [],
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, gapAnalysis, "Skill-gap analysis generated successfully"));
+});
+
+export const handleUploadKnowledgeDocument = asyncHandler(async (req, res) => {
+  if (req.user.role !== "ADMIN") {
+    throw new ApiError(403, "Access denied. Only Admins can upload knowledge documents.");
+  }
+
+  const { title, category, content, tags } = req.body;
+
+  if (!title || !content) {
+    throw new ApiError(400, "Document title and content are required");
+  }
+
+  const indexedDoc = await addKnowledgeDocument({ title, category, content, tags });
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, indexedDoc, "Document indexed into RAG Knowledge Base successfully"));
 });
 
 export const getChatSessions = asyncHandler(async (req, res) => {
@@ -96,5 +139,5 @@ export const getChatSessions = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, sessions, "Chat sessions retrieved"));
+    .json(new ApiResponse(200, sessions, "Chat sessions retrieved successfully"));
 });
