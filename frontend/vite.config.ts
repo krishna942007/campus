@@ -10,14 +10,27 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    port: 5173,
     open: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
       },
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-icons': ['lucide-react'],
+          'vendor-charts': ['recharts']
+        }
+      }
+    }
+  }
 });
