@@ -3,6 +3,10 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.models.js";
 
 export const getSystemTelemetry = asyncHandler(async (req, res) => {
+  if (req.user.role !== "ADMIN") {
+    throw new ApiError(403, "Access denied. Admin authorization required.");
+  }
+
   const totalUsers = await User.countDocuments();
   const studentCount = await User.countDocuments({ role: "STUDENT" });
   const mentorCount = await User.countDocuments({ role: "MENTOR" });
@@ -26,6 +30,10 @@ export const getSystemTelemetry = asyncHandler(async (req, res) => {
 });
 
 export const getAllUsers = asyncHandler(async (req, res) => {
+  if (req.user.role !== "ADMIN") {
+    throw new ApiError(403, "Access denied. Admin authorization required.");
+  }
+
   const { role, department } = req.query;
   const query = {};
 
@@ -40,6 +48,9 @@ export const getAllUsers = asyncHandler(async (req, res) => {
 });
 
 export const triggerErpSync = asyncHandler(async (req, res) => {
+  if (req.user.role !== "ADMIN") {
+    throw new ApiError(403, "Access denied. Admin authorization required.");
+  }
   return res.status(200).json(
     new ApiResponse(
       200,

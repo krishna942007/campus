@@ -62,6 +62,11 @@ export const respondMentorRequest = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Mentor request not found");
   }
 
+  // Authorization check: Only the targeted mentor can respond to the request
+  if (request.mentor.toString() !== req.user._id.toString() && req.user.role !== "ADMIN") {
+    throw new ApiError(403, "You are not authorized to respond to this mentor request");
+  }
+
   request.status = status;
   if (feedbackNote) request.feedbackNote = feedbackNote;
   await request.save();
@@ -73,6 +78,10 @@ export const respondMentorRequest = asyncHandler(async (req, res) => {
 
 export const assignOnlineCourse = asyncHandler(async (req, res) => {
   const { studentId, title, platform, url, category, difficulty, guidanceNotes } = req.body;
+
+  if (req.user.role !== "MENTOR" && req.user.role !== "ADMIN") {
+    throw new ApiError(403, "Only mentors and admins can assign courses to students");
+  }
 
   if (!studentId || !title) {
     throw new ApiError(400, "Student ID and course title are required");
@@ -108,6 +117,10 @@ export const getAssignedCourses = asyncHandler(async (req, res) => {
 
 export const scheduleMeeting = asyncHandler(async (req, res) => {
   const { studentId, title, agenda, scheduledAt, meetingLink } = req.body;
+
+  if (req.user.role !== "MENTOR" && req.user.role !== "ADMIN") {
+    throw new ApiError(403, "Only mentors and admins can schedule 1-on-1 meetings");
+  }
 
   if (!studentId || !title || !scheduledAt) {
     throw new ApiError(400, "Student ID, title, and scheduled time are required");
