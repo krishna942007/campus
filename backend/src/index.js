@@ -14,7 +14,7 @@ const { default: connectDB } = await import("./db/index.js");
 
 connectDB()
   .then(() => {
-    const PORT = process.env.PORT || 8000;
+    const PORT = process.env.PORT || 5000;
 
     app.on("error", (error) => {
       console.log("Server error: " + error);

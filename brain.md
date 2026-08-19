@@ -34,7 +34,7 @@ VITARA unifies:
 | **Charts & Analytics** | [Recharts 2.15.0](https://recharts.org/) (ResponsiveContainer, LineChart, BarChart, etc.) |
 
 ### 🎨 Institutional Design System (VIT Mumbai Aesthetic)
-All styles conform strictly to the bespoke VIT Mumbai brand palette defined in [`tailwind.config.js`](file:///c:/Users/HP/Desktop/project1/tailwind.config.js) and [`src/index.css`](file:///c:/Users/HP/Desktop/project1/src/index.css):
+All styles conform strictly to the bespoke VIT Mumbai brand palette defined in [`frontend/tailwind.config.js`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/tailwind.config.js) and [`frontend/src/index.css`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/src/index.css):
 
 * **Canvas Background**: Warm Cream `#F7F4EE` & `#FAF7F0`
 * **Card Surface**: Pure Ivory `#FFFCF7` & `#FFFFFF`
@@ -48,7 +48,7 @@ All styles conform strictly to the bespoke VIT Mumbai brand palette defined in [
 
 ## 🧭 3. Application Routing & Architecture Flow
 
-The entire routing engine is managed in [`frontend/src/App.tsx`](file:///c:/Users/HP/Desktop/project1/frontend/src/App.tsx) through HTML5 History API integration (`pushState`, `popstate`), ensuring bookmarkable URLs, browser back/forward button support, and instant zero-page-reload rendering.
+The entire routing engine is managed in [`frontend/src/App.tsx`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/src/App.tsx) through HTML5 History API integration (`pushState`, `popstate`), ensuring bookmarkable URLs, browser back/forward button support, and instant zero-page-reload rendering.
 
 ```
                                   ┌──────────────────┐
@@ -263,4 +263,4 @@ npm run build:backend
 4. **WebSocket Notifications**: Upgrade `storage` events to live WebSockets for instant multi-user messaging and live meeting notifications.
 
 ---
-*Document maintained automatically. For changes or queries, update [`frontend/src/services/mentoringStore.ts`](file:///c:/Users/HP/Desktop/project1/frontend/src/services/mentoringStore.ts) and [`frontend/src/App.tsx`](file:///c:/Users/HP/Desktop/project1/frontend/src/App.tsx).*
+*Document maintained automatically. For changes or queries, update [`frontend/src/services/mentoringStore.ts`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/src/services/mentoringStore.ts) and [`frontend/src/App.tsx`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/src/App.tsx).*
