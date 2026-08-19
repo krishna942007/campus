@@ -13,7 +13,8 @@
     "dev:backend": "npm --prefix backend run dev",
     "build:backend": "npm --prefix backend run build",
     "build": "npm run build:backend && npm run build:frontend",
-    "test:ai": "node scratch/test_ai_rag_suite.js"
+    "test:ai": "node scratch/test_ai_rag_suite.js",
+    "seed:db": "node backend/src/db/seedData.js"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"
