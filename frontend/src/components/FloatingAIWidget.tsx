@@ -149,7 +149,7 @@ export const FloatingAIWidget: React.FC = () => {
                       ? 'bg-[#0C2238] text-white rounded-br-xs shadow-sm font-medium'
                       : 'bg-[#F7F4EE] text-[#10253A] border border-[#0C2238]/08 rounded-bl-xs leading-relaxed shadow-2xs'
                   }`}>
-                    <p>{m.text}</p>
+                    <div className="whitespace-pre-wrap leading-relaxed space-y-1.5">{m.text}</div>
                   </div>
                 </div>
               ))}

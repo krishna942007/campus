@@ -18,29 +18,31 @@ export const handleAIChat = asyncHandler(async (req, res) => {
   }
 
   let session;
-  if (sessionId) {
+  if (sessionId && req.user?._id) {
     session = await ChatSession.findById(sessionId);
   }
 
-  if (!session) {
+  if (!session && req.user?._id) {
     session = await ChatSession.create({
       user: req.user._id,
       title: prompt.slice(0, 35) + "...",
-      modelUsed: model || "gemini-3.6-flash",
+      modelUsed: model || "gemini-2.5-flash",
       messages: [],
     });
   }
 
-  session.messages.push({
-    role: "user",
-    content: prompt,
-    timestamp: new Date(),
-  });
+  if (session) {
+    session.messages.push({
+      role: "user",
+      content: prompt,
+      timestamp: new Date(),
+    });
+  }
 
   const userContext = {
-    name: req.user.fullName || req.user.name || "Student",
-    role: req.user.role || "STUDENT",
-    department: req.user.department || "Computer Engineering",
+    name: req.user?.fullName || req.user?.name || "Student",
+    role: req.user?.role || "STUDENT",
+    department: req.user?.department || "Computer Engineering",
   };
 
   const { reply, thinkingSteps } = await generateAIResponse({
@@ -50,21 +52,25 @@ export const handleAIChat = asyncHandler(async (req, res) => {
     model,
   });
 
-  session.messages.push({
-    role: "assistant",
-    content: reply,
-    thinkingSteps: thinkingSteps || [],
-    timestamp: new Date(),
-  });
-
-  await session.save();
+  if (session) {
+    session.messages.push({
+      role: "assistant",
+      content: reply,
+      thinkingSteps: thinkingSteps || [],
+      timestamp: new Date(),
+    });
+    await session.save();
+  }
 
   return res.status(200).json(
     new ApiResponse(
       200,
       {
-        sessionId: session._id,
-        messages: session.messages,
+        sessionId: session?._id || null,
+        messages: session?.messages || [
+          { role: "user", content: prompt },
+          { role: "assistant", content: reply }
+        ],
         reply,
         thinkingSteps,
       },
