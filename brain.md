@@ -123,13 +123,13 @@ c:\Users\HP\Desktop\project1
     ├── package.json           # Backend dependencies (mongoose, express, bcryptjs, jsonwebtoken, cors, cookie-parser)
     ├── tsconfig.json          # TypeScript config
     ├── .prettierrc            # Prettier configuration
-    ├── .env                   # Live environment configuration (Gemini API & HF Keys)
+    ├── .env                   # Live environment configuration (MongoDB Atlas, Gemini API & HF Keys)
     ├── .env.example           # Environment template
     └── src/
         ├── index.js           # Server startup (dynamic env loading & MongoDB initialization)
         ├── app.js             # Express app setup & route mounting (/api/v1/*)
         ├── db/
-        │   └── index.js       # Mongoose MongoDB connection handler
+        │   └── index.js       # Mongoose MongoDB connection handler (with DNS SRV fallback for Atlas)
         ├── models/
         │   ├── user.models.js          # User schema (Student, Mentor, Admin) & JWT methods
         │   ├── mentorRequest.models.js # Student-mentor matching requests
