@@ -13,6 +13,7 @@ import {
   ChevronRight,
   GraduationCap,
   ArrowLeft,
+  ArrowRight,
   UserCheck,
   Brain,
   Award,
@@ -53,6 +54,7 @@ import {
 } from '../services/mentoringStore';
 import { ToastNotification, ToastMessage } from './ToastNotification';
 import { ChatGPTAIWorkspace } from './ChatGPTAIWorkspace';
+import { useAuthStore } from '../store/useAuthStore';
 
 interface MentorPortalProps {
   onBackToLanding: () => void;
@@ -73,6 +75,46 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) =
     | 'Notifications'
     | 'Settings'
   >('Overview');
+
+  // Retrieve Active Logged-In Teacher from Auth Store or Local Storage
+  const authUser = useAuthStore((state) => state.user);
+  const currentTeacher = authUser || (() => {
+    try {
+      const stored = localStorage.getItem('vit_current_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const teacherKey = currentTeacher?.email || currentTeacher?.rollNo || 'teacher_default';
+
+  // Teacher Onboarding State (per-account)
+  const [hasCompletedTeacherOnboarding, setHasCompletedTeacherOnboarding] = useState<boolean>(() => {
+    return localStorage.getItem(`vit_teacher_onboarding_completed_${teacherKey}`) === 'true';
+  });
+  const [showTeacherOnboardingModal, setShowTeacherOnboardingModal] = useState<boolean>(!hasCompletedTeacherOnboarding);
+  const [teacherOnboardingStep, setTeacherOnboardingStep] = useState<1 | 2 | 3>(1);
+
+  // Authoritative Faculty Profile Data
+  const [teacherProfile, setTeacherProfile] = useState(() => {
+    try {
+      const stored = localStorage.getItem(`vit_teacher_profile_${teacherKey}`);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return {
+      name: currentTeacher?.name || 'Prof. S. Kulkarni',
+      email: currentTeacher?.email || 's.kulkarni@vit.edu.in',
+      roleId: currentTeacher?.rollNo || 'FAC-CSE-004',
+      designation: currentTeacher?.designation || 'Associate Professor & Head of AI Lab',
+      department: currentTeacher?.department || 'Computer Engineering',
+      semestersTaught: ['Semester IV', 'Semester VI'],
+      domainExpertise: currentTeacher?.domainExpertise?.length ? currentTeacher.domainExpertise : ['Artificial Intelligence', 'Deep Learning', 'Natural Language Processing', 'Autonomous Systems'],
+      officeHours: 'Mon & Wed • 03:00 PM – 05:00 PM',
+      location: 'Faculty AI Research Lab, Room M-304',
+      bio: 'Leading deep learning, generative AI, and autonomous systems research at VIT Mumbai.'
+    };
+  });
 
   // Shared Mentoring Store State
   const [storeState, setStoreState] = useState(() => getMentoringStore());
@@ -677,18 +719,18 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) =
         {/* TOP FACULTY IDENTITY HEADER */}
         <header className="bg-[#FFFDF8] border-b border-[#E2D7C6] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-30 shadow-xs">
           <div className="flex items-center space-x-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#123B63] text-[#F5C056] flex items-center justify-center font-extrabold text-sm shadow-sm border border-[#C49A52]/40">
-              SK
+            <div className="w-11 h-11 rounded-2xl bg-[#123B63] text-[#F5C056] flex items-center justify-center font-extrabold text-sm shadow-sm border border-[#C49A52]/40 uppercase">
+              {teacherProfile.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'FM'}
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="text-lg font-extrabold text-[#102A43]">Prof. S. Kulkarni</h1>
-                <span className="px-2.5 py-0.5 rounded-full bg-[#E9DDC9] text-[#102A43] text-[10px] font-bold border border-[#E2D7C6]">
-                  HOD & ASSOCIATE PROFESSOR
+                <h1 className="text-lg font-extrabold text-[#102A43]">{teacherProfile.name}</h1>
+                <span className="px-2.5 py-0.5 rounded-full bg-[#E9DDC9] text-[#102A43] text-[10px] font-bold border border-[#E2D7C6] uppercase">
+                  {teacherProfile.designation}
                 </span>
               </div>
               <p className="text-xs text-[#5A6E7F]">
-                Department of Computer Engineering • Wadala AI Research Lab Lead | Mentees: <strong className="text-[#123B63]">{allMentees.length} Active</strong>
+                Department of {teacherProfile.department} • {teacherProfile.location} | Teaching: <strong>{teacherProfile.semestersTaught.join(', ')}</strong> | Mentees: <strong className="text-[#123B63]">{allMentees.length} Active</strong>
               </p>
             </div>
           </div>
@@ -2519,6 +2561,294 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) =
               </button>
             </form>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* 👨‍🏫 FIRST LOGIN / NEW FACULTY MENTOR ONBOARDING & SETUP MODAL */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {showTeacherOnboardingModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0C2238]/70 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-[#FFFCF7] border border-[#0C2238]/15 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-[#0C2238] via-[#123B63] to-[#07182A] text-white p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                  <UserCheck className="w-32 h-32 text-[#E8C56B]" />
+                </div>
+                <div className="relative z-10">
+                  <div className="flex items-center space-x-2 text-[#E8C56B] text-xs font-bold uppercase tracking-wider mb-1">
+                    <Sparkles className="w-4 h-4" />
+                    <span>VITARA Faculty Mentor Setup & Academic Profile</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+                    {teacherOnboardingStep === 1 && "Confirm Faculty Profile & Designation"}
+                    {teacherOnboardingStep === 2 && "Select Semesters Taught & Domains"}
+                    {teacherOnboardingStep === 3 && "Set Office Hours & Mentoring Bio"}
+                  </h2>
+                  <p className="text-xs text-slate-300 mt-1">
+                    Step {teacherOnboardingStep} of 3 • Configuring student matching criteria & mentor roster
+                  </p>
+                </div>
+
+                {/* Progress Indicators */}
+                <div className="grid grid-cols-3 gap-2 mt-5">
+                  {[1, 2, 3].map((step) => (
+                    <div
+                      key={step}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        step <= teacherOnboardingStep ? "bg-[#C99632]" : "bg-white/20"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Modal Step Content */}
+              <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6 text-sm text-[#10253A]">
+                {/* STEP 1: FACULTY PROFILE & PROFESSION */}
+                {teacherOnboardingStep === 1 && (
+                  <div className="space-y-4">
+                    <p className="text-xs text-[#627083] leading-relaxed">
+                      Confirm your professional designation, full name, and academic department for student mentee discovery.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Full Name & Title</label>
+                        <input
+                          type="text"
+                          value={teacherProfile.name}
+                          onChange={(e) => setTeacherProfile({ ...teacherProfile, name: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                          placeholder="e.g. Prof. Sameer Kulkarni"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Official Faculty Email</label>
+                        <input
+                          type="email"
+                          value={teacherProfile.email}
+                          onChange={(e) => setTeacherProfile({ ...teacherProfile, email: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                          placeholder="e.g. s.kulkarni@vit.edu.in"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Designation / Profession</label>
+                        <select
+                          value={teacherProfile.designation}
+                          onChange={(e) => setTeacherProfile({ ...teacherProfile, designation: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                        >
+                          <option value="Associate Professor & Head of AI Lab">Associate Professor & Head of AI Lab</option>
+                          <option value="Professor & Research Chair">Professor & Research Chair</option>
+                          <option value="Associate Professor">Associate Professor</option>
+                          <option value="Assistant Professor">Assistant Professor</option>
+                          <option value="Head of Department (HOD)">Head of Department (HOD)</option>
+                          <option value="Dean / Senior Academician">Dean / Senior Academician</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Academic Department</label>
+                        <select
+                          value={teacherProfile.department}
+                          onChange={(e) => setTeacherProfile({ ...teacherProfile, department: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                        >
+                          <option value="Computer Engineering">Computer Engineering</option>
+                          <option value="AI & Data Science">AI & Data Science</option>
+                          <option value="Information Technology">Information Technology</option>
+                          <option value="Electronics & Telecommunication">Electronics & Telecommunication</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 2: SEMESTERS TAUGHT & SPECIALIZATION FIELDS */}
+                {teacherOnboardingStep === 2 && (
+                  <div className="space-y-5">
+                    <div>
+                      <label className="block text-xs font-bold text-[#0C2238] mb-2">
+                        Semesters / Batches Currently Teaching (Select all that apply)
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {["Semester I", "Semester II", "Semester III", "Semester IV", "Semester V", "Semester VI", "Semester VII", "Semester VIII"].map((sem) => {
+                          const isSelected = teacherProfile.semestersTaught.includes(sem);
+                          return (
+                            <div
+                              key={sem}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setTeacherProfile({
+                                    ...teacherProfile,
+                                    semestersTaught: teacherProfile.semestersTaught.filter((s: string) => s !== sem)
+                                  });
+                                } else {
+                                  setTeacherProfile({
+                                    ...teacherProfile,
+                                    semestersTaught: [...teacherProfile.semestersTaught, sem]
+                                  });
+                                }
+                              }}
+                              className={`p-2 rounded-xl border text-center text-xs font-bold cursor-pointer transition-all ${
+                                isSelected
+                                  ? "bg-[#0C2238] text-white border-[#0C2238]"
+                                  : "bg-[#F7F4EE] text-[#10253A] border-[#0C2238]/12 hover:border-[#0C2238]/30"
+                              }`}
+                            >
+                              {sem}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#0C2238] mb-2">
+                        Specialization Fields & Research Domains (Used for 4-Factor AI Student Matching)
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {[
+                          "Artificial Intelligence & Deep Learning",
+                          "Computer Vision & Medical Imaging",
+                          "Natural Language Processing & LLMs",
+                          "Cloud Computing & Distributed Systems",
+                          "DevOps, CI/CD & Kubernetes",
+                          "Cyber Security, Cryptography & Web3",
+                          "Data Science, BigQuery & Data Mining",
+                          "High Performance Computing & GPU Systems",
+                        ].map((domain) => {
+                          const isSelected = teacherProfile.domainExpertise.includes(domain);
+                          return (
+                            <div
+                              key={domain}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setTeacherProfile({
+                                    ...teacherProfile,
+                                    domainExpertise: teacherProfile.domainExpertise.filter((d: string) => d !== domain)
+                                  });
+                                } else {
+                                  setTeacherProfile({
+                                    ...teacherProfile,
+                                    domainExpertise: [...teacherProfile.domainExpertise, domain]
+                                  });
+                                }
+                              }}
+                              className={`p-2.5 px-3 rounded-xl border text-xs font-semibold cursor-pointer flex items-center justify-between transition-all ${
+                                isSelected
+                                  ? "bg-[#C99632] text-white border-[#C99632]"
+                                  : "bg-[#F7F4EE] text-[#10253A] border-[#0C2238]/12 hover:border-[#0C2238]/30"
+                              }`}
+                            >
+                              <span>{domain}</span>
+                              {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 3: OFFICE HOURS & RESEARCH GUIDANCE */}
+                {teacherOnboardingStep === 3 && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Office Hours / Availability</label>
+                        <input
+                          type="text"
+                          value={teacherProfile.officeHours}
+                          onChange={(e) => setTeacherProfile({ ...teacherProfile, officeHours: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                          placeholder="e.g. Mon & Wed • 03:00 PM – 05:00 PM"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Cabin / Lab Location</label>
+                        <input
+                          type="text"
+                          value={teacherProfile.location}
+                          onChange={(e) => setTeacherProfile({ ...teacherProfile, location: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                          placeholder="e.g. Faculty AI Research Lab, Room M-304"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Mentoring Guidance Philosophy & Bio</label>
+                      <textarea
+                        rows={3}
+                        value={teacherProfile.bio}
+                        onChange={(e) => setTeacherProfile({ ...teacherProfile, bio: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                        placeholder="Describe your research focus, expectations for mentees, and preferred capstone projects..."
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer Buttons */}
+              <div className="p-4 sm:p-6 bg-[#F7F4EE] border-t border-[#0C2238]/10 flex items-center justify-between">
+                {teacherOnboardingStep > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setTeacherOnboardingStep((prev) => (prev - 1) as any)}
+                    className="flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold text-[#0C2238] hover:bg-[#EFE7D8] transition-colors cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Previous</span>
+                  </button>
+                ) : (
+                  <div />
+                )}
+
+                {teacherOnboardingStep < 3 ? (
+                  <button
+                    type="button"
+                    onClick={() => setTeacherOnboardingStep((prev) => (prev + 1) as any)}
+                    className="flex items-center space-x-1.5 px-5 py-2.5 rounded-xl bg-[#0C2238] text-white text-xs font-bold hover:bg-[#123B63] shadow-md transition-all cursor-pointer"
+                  >
+                    <span>Continue</span>
+                    <ArrowRight className="w-4 h-4 text-[#E8C56B]" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      try {
+                        localStorage.setItem(`vit_teacher_profile_${teacherKey}`, JSON.stringify(teacherProfile));
+                        localStorage.setItem(`vit_teacher_onboarding_completed_${teacherKey}`, 'true');
+                      } catch (e) {}
+
+                      setHasCompletedTeacherOnboarding(true);
+                      setShowTeacherOnboardingModal(false);
+                      addToast(
+                        'Faculty Profile Configured!',
+                        `Welcome ${teacherProfile.name}! Your teaching profile, domain specializations, and office hours are active.`,
+                        'success'
+                      );
+                    }}
+                    className="flex items-center space-x-1.5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#123B63] to-[#0C2238] text-white text-xs font-black hover:opacity-95 shadow-lg transition-all cursor-pointer border border-[#C99632]/40"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-[#E8C56B]" />
+                    <span>Complete Setup & Open Faculty Center</span>
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

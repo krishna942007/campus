@@ -70,6 +70,7 @@ import {
 } from '../services/mentoringStore';
 import { ToastNotification, ToastMessage } from './ToastNotification';
 import { ChatGPTAIWorkspace } from './ChatGPTAIWorkspace';
+import { useAuthStore } from '../store/useAuthStore';
 
 interface StudentPortalProps {
   onBackToLanding: () => void;
@@ -117,24 +118,71 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // FIRST LOGIN ONBOARDING DETECTION (Tied to Account Persistence)
+  // Retrieve Active Logged-In User from Auth Store or Local Storage
+  const authUser = useAuthStore((state) => state.user);
+  const currentUser = authUser || (() => {
+    try {
+      const stored = localStorage.getItem('vit_current_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const userKey = currentUser?.email || currentUser?.rollNo || 'student_guest';
+
+  // FIRST LOGIN ONBOARDING DETECTION (Tied to Specific User Account)
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
-    return localStorage.getItem('vit_student_onboarding_completed') === 'true';
+    return localStorage.getItem(`vit_student_onboarding_completed_${userKey}`) === 'true';
   });
   const [showOnboardingModal, setShowOnboardingModal] = useState<boolean>(!hasCompletedOnboarding);
   const [onboardingStep, setOnboardingStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
-  // Student Onboarding Survey State
-  const [selectedField, setSelectedField] = useState<string>('AI / Machine Learning');
-  const [selectedGoals, setSelectedGoals] = useState<string[]>(['Get placed in software development', 'Become an AI/ML engineer']);
+  // Student Onboarding Survey & Roadmap State
+  const [selectedField, setSelectedField] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(`vit_student_field_${userKey}`);
+      if (saved) return saved;
+    } catch {}
+    return 'AI / Machine Learning';
+  });
+  const [selectedGoals, setSelectedGoals] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(`vit_student_goals_${userKey}`);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return ['Tier-1 Tech Placement (>25 LPA)', 'AI/ML Systems Research'];
+  });
   const [isConfused, setIsConfused] = useState<boolean>(false);
-  
-  const [enjoyedWork, setEnjoyedWork] = useState<string[]>(['Coding', 'Problem Solving', 'Building Products']);
-  const [improveAreas, setImproveAreas] = useState<string[]>(['DSA', 'AI/ML', 'System Design']);
-  const [learningPreference, setLearningPreference] = useState<string>('Projects & Hands-on');
+  const [targetRoleInput, setTargetRoleInput] = useState<string>('AI Research Engineer');
+  const [enjoyedWork, setEnjoyedWork] = useState<string[]>(['Deep Learning & PyTorch', 'System Architecture', 'Building Real-world Apps']);
+  const [improveAreas, setImproveAreas] = useState<string[]>(['Advanced DSA', 'Distributed Systems', 'Model Quantization']);
+  const [learningPreference, setLearningPreference] = useState<string>('Hands-on Projects & Labs');
+
+  // Authoritative Student Account Profile Data
+  const [profileData, setProfileData] = useState(() => {
+    try {
+      const stored = localStorage.getItem(`vit_student_profile_${userKey}`);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return {
+      name: currentUser?.name || 'Krishna Singh',
+      studentId: currentUser?.rollNo || '2023CSE001',
+      prn: currentUser?.rollNo ? `202301240${currentUser.rollNo.slice(-3)}` : '202301240091',
+      program: 'B.Tech Engineering',
+      branch: currentUser?.department || 'Computer Engineering & AI',
+      semester: currentUser?.semester ? `Semester ${currentUser.semester}` : 'Semester IV',
+      division: 'Division A',
+      batch: '2023–2027',
+      email: currentUser?.email || 'krishna.s@vit.edu.in',
+      phone: '+91 98765 43210',
+      github: `github.com/${(currentUser?.name || 'student').toLowerCase().replace(/\s+/g, '-')}-vit`,
+      bio: 'CS student specializing in AI/ML & Systems. Target 30+ LPA Placements.'
+    };
+  });
 
   // Derive Assigned Mentor Status dynamically from Shared Store State
-  const latestRequest = storeState.mentorRequests.find((r: MentorRequest) => r.studentId === '2023CSE001');
+  const latestRequest = storeState.mentorRequests.find((r: MentorRequest) => r.studentId === profileData.studentId || r.studentId === '2023CSE001');
   const mentorStatus = latestRequest ? latestRequest.status : 'NONE';
 
   const [mentorConfirmModal, setMentorConfirmModal] = useState<any | null>(null);
@@ -142,22 +190,6 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
   const [showChangeMentorModal, setShowChangeMentorModal] = useState(false);
   const [changeReason, setChangeReason] = useState('Shift in specialization track');
   const [showWhySeeingInsight, setShowWhySeeingInsight] = useState(false);
-
-  // Authoritative Student Account Profile Data
-  const [profileData, setProfileData] = useState({
-    name: 'Krishna Singh',
-    studentId: '2023CSE001',
-    prn: '202301240091',
-    program: 'B.Tech Engineering',
-    branch: 'Computer Engineering & AI',
-    semester: 'Semester IV',
-    division: 'Division A',
-    batch: '2023–2027',
-    email: 'krishna.s@vit.edu.in',
-    phone: '+91 98765 43210',
-    github: 'github.com/krishna-singh-vit',
-    bio: 'CS student specializing in AI/ML & Full-Stack Systems. Target 30+ LPA Placements.'
-  });
 
   // 100% REAL ONLINE COURSES RECOMMENDED BY AI
   const [aiRecommendedCourses] = useState([
@@ -2203,6 +2235,334 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
               </button>
             </form>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* 🚀 FIRST LOGIN / NEW STUDENT ONBOARDING & CAREER ROADMAP MODAL */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {showOnboardingModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0C2238]/70 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-[#FFFCF7] border border-[#0C2238]/15 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-[#0C2238] via-[#123B63] to-[#07182A] text-white p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                  <Sparkles className="w-32 h-32 text-[#E8C56B]" />
+                </div>
+                <div className="relative z-10">
+                  <div className="flex items-center space-x-2 text-[#E8C56B] text-xs font-bold uppercase tracking-wider mb-1">
+                    <Sparkles className="w-4 h-4" />
+                    <span>VITARA Student Onboarding & Career Roadmap</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+                    {onboardingStep === 1 && "Confirm Your Academic Profile"}
+                    {onboardingStep === 2 && "Choose Your Career Track & Target Field"}
+                    {onboardingStep === 3 && "Define Goals & Target Milestones"}
+                    {onboardingStep === 4 && "Initialize Your AI Career Roadmap"}
+                  </h2>
+                  <p className="text-xs text-slate-300 mt-1">
+                    Step {onboardingStep} of 4 • Setting up personalized curriculum & mentoring matches
+                  </p>
+                </div>
+
+                {/* Progress Indicators */}
+                <div className="grid grid-cols-4 gap-2 mt-5">
+                  {[1, 2, 3, 4].map((step) => (
+                    <div
+                      key={step}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        step <= onboardingStep ? "bg-[#C99632]" : "bg-white/20"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Modal Step Content */}
+              <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6 text-sm text-[#10253A]">
+                {/* STEP 1: ACADEMIC PROFILE */}
+                {onboardingStep === 1 && (
+                  <div className="space-y-4">
+                    <p className="text-xs text-[#627083] leading-relaxed">
+                      Let's make sure your basic academic records and department match your official VIT Mumbai registration.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Full Name</label>
+                        <input
+                          type="text"
+                          value={profileData.name}
+                          onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                          placeholder="e.g. Aarav Sharma"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Roll Number / Student ID</label>
+                        <input
+                          type="text"
+                          value={profileData.studentId}
+                          onChange={(e) => setProfileData({ ...profileData, studentId: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                          placeholder="e.g. 2023CSE001"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Department / Branch</label>
+                        <select
+                          value={profileData.branch}
+                          onChange={(e) => setProfileData({ ...profileData, branch: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                        >
+                          <option value="Computer Engineering & AI">Computer Engineering & AI</option>
+                          <option value="AI & Data Science">AI & Data Science</option>
+                          <option value="Information Technology">Information Technology</option>
+                          <option value="Electronics & Telecommunication">Electronics & Telecommunication</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Current Semester</label>
+                        <select
+                          value={profileData.semester}
+                          onChange={(e) => setProfileData({ ...profileData, semester: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                        >
+                          <option value="Semester I">Semester I</option>
+                          <option value="Semester II">Semester II</option>
+                          <option value="Semester III">Semester III</option>
+                          <option value="Semester IV">Semester IV</option>
+                          <option value="Semester V">Semester V</option>
+                          <option value="Semester VI">Semester VI</option>
+                          <option value="Semester VII">Semester VII</option>
+                          <option value="Semester VIII">Semester VIII</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 2: FIELD & TRACK SELECTION */}
+                {onboardingStep === 2 && (
+                  <div className="space-y-4">
+                    <p className="text-xs text-[#627083] leading-relaxed">
+                      Select your primary technical specialization track. This trains your AI Mentor matching algorithm and course suggestions.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {[
+                        { title: "AI / Machine Learning", desc: "Deep Learning, PyTorch, LLMs, Computer Vision & Transformers" },
+                        { title: "Full Stack Systems", desc: "React, Node.js, Distributed Backends, Microservices & GraphQL" },
+                        { title: "Cloud & DevOps SRE", desc: "Kubernetes, Docker, AWS/GCP, CI/CD Pipelines & Terraform" },
+                        { title: "Cyber Security & Web3", desc: "Ethical Hacking, Cryptography, Blockchain, Smart Contracts" },
+                        { title: "Data Science & Big Data", desc: "Statistical Modeling, Pandas, Spark, BigQuery & BI Dashboards" },
+                        { title: "Embedded & IoT Systems", desc: "Robotics, Microcontrollers, Edge AI & Autonomous Hardware" },
+                      ].map((field) => (
+                        <div
+                          key={field.title}
+                          onClick={() => setSelectedField(field.title)}
+                          className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                            selectedField === field.title
+                              ? "bg-[#0C2238]/05 border-[#C99632] shadow-xs"
+                              : "bg-[#F7F4EE]/60 border-[#0C2238]/10 hover:border-[#0C2238]/30"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-xs font-bold text-[#0C2238]">{field.title}</h4>
+                            {selectedField === field.title && (
+                              <CheckCircle2 className="w-4 h-4 text-[#C99632]" />
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[#627083] mt-1 leading-snug">{field.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 3: GOALS & TARGET ROLE */}
+                {onboardingStep === 3 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Target Career Role / Title</label>
+                      <input
+                        type="text"
+                        value={targetRoleInput}
+                        onChange={(e) => setTargetRoleInput(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                        placeholder="e.g. AI Research Engineer, Staff Backend Architect, SRE Lead"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#0C2238] mb-2">Primary Academic & Career Goals (Select multiple)</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {[
+                          "Tier-1 Tech Placement (>25 LPA)",
+                          "AI/ML Systems Research & Patents",
+                          "Publish IEEE / ACM Conference Papers",
+                          "Direct MS/PhD Admissions at Top Global Universities",
+                          "Startup Founder / DeepTech Incubator Track",
+                          "Competitive Programming & ICPC Regional Finalist",
+                        ].map((goal) => {
+                          const isSelected = selectedGoals.includes(goal);
+                          return (
+                            <div
+                              key={goal}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setSelectedGoals(selectedGoals.filter((g) => g !== goal));
+                                } else {
+                                  setSelectedGoals([...selectedGoals, goal]);
+                                }
+                              }}
+                              className={`p-2.5 px-3 rounded-xl border text-xs font-semibold cursor-pointer flex items-center justify-between transition-all ${
+                                isSelected
+                                  ? "bg-[#0C2238] text-white border-[#0C2238]"
+                                  : "bg-[#F7F4EE] text-[#10253A] border-[#0C2238]/12 hover:border-[#0C2238]/30"
+                              }`}
+                            >
+                              <span>{goal}</span>
+                              {isSelected && <Check className="w-3.5 h-3.5 text-[#E8C56B]" />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Preferred Learning Style</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Hands-on Projects & Labs", "Structured Stanford/MIT Online Courses", "1-on-1 Faculty Mentoring", "Competitive Hackathons"].map((style) => (
+                          <button
+                            key={style}
+                            type="button"
+                            onClick={() => setLearningPreference(style)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                              learningPreference === style
+                                ? "bg-[#C99632] text-white border-[#C99632]"
+                                : "bg-[#F7F4EE] text-[#10253A] border-[#0C2238]/15 hover:bg-[#EFE7D8]"
+                            }`}
+                          >
+                            {style}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 4: AI ROADMAP CONFIRMATION */}
+                {onboardingStep === 4 && (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-2xl bg-[#0C2238]/05 border border-[#C99632]/40">
+                      <div className="flex items-center space-x-2 text-[#C99632] font-bold text-xs mb-1">
+                        <Sparkles className="w-4 h-4" />
+                        <span>AI Tailored Roadmap Summary</span>
+                      </div>
+                      <h3 className="text-sm font-extrabold text-[#0C2238]">
+                        {targetRoleInput} • {selectedField}
+                      </h3>
+                      <p className="text-xs text-[#627083] mt-1">
+                        Profile: <strong>{profileData.name}</strong> ({profileData.branch}, {profileData.semester})
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-bold text-[#0C2238] mb-2">Generated Semester Milestone Sequence:</h4>
+                      <div className="space-y-2 text-xs">
+                        <div className="p-3 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/10 flex items-start space-x-3">
+                          <span className="w-5 h-5 rounded-full bg-[#159A72] text-white text-[10px] font-bold flex items-center justify-center shrink-0">1</span>
+                          <div>
+                            <p className="font-bold text-[#0C2238]">Phase 1: Core Foundations & Algorithmic Rigor</p>
+                            <p className="text-[#627083] text-[11px]">Complete Advanced DSA & PyTorch Transformer architectures.</p>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/10 flex items-start space-x-3">
+                          <span className="w-5 h-5 rounded-full bg-[#C99632] text-white text-[10px] font-bold flex items-center justify-center shrink-0">2</span>
+                          <div>
+                            <p className="font-bold text-[#0C2238]">Phase 2: RAG Vector Search & Distributed Systems Capstone</p>
+                            <p className="text-[#627083] text-[11px]">Build production RAG pipelines and conduct faculty research reviews.</p>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/10 flex items-start space-x-3">
+                          <span className="w-5 h-5 rounded-full bg-[#123B63] text-white text-[10px] font-bold flex items-center justify-center shrink-0">3</span>
+                          <div>
+                            <p className="font-bold text-[#0C2238]">Phase 3: Tier-1 Placement Readiness & Mock Interviews</p>
+                            <p className="text-[#627083] text-[11px]">Conduct 1-on-1 mock reviews with assigned faculty mentor.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer Buttons */}
+              <div className="p-4 sm:p-6 bg-[#F7F4EE] border-t border-[#0C2238]/10 flex items-center justify-between">
+                {onboardingStep > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setOnboardingStep((prev) => (prev - 1) as any)}
+                    className="flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold text-[#0C2238] hover:bg-[#EFE7D8] transition-colors cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Previous</span>
+                  </button>
+                ) : (
+                  <div />
+                )}
+
+                {onboardingStep < 4 ? (
+                  <button
+                    type="button"
+                    onClick={() => setOnboardingStep((prev) => (prev + 1) as any)}
+                    className="flex items-center space-x-1.5 px-5 py-2.5 rounded-xl bg-[#0C2238] text-white text-xs font-bold hover:bg-[#123B63] shadow-md transition-all cursor-pointer"
+                  >
+                    <span>Continue</span>
+                    <ArrowRight className="w-4 h-4 text-[#E8C56B]" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Save profile and onboarding state
+                      const updatedProfile = {
+                        ...profileData,
+                        bio: `${profileData.branch} student targeting ${targetRoleInput}. Focused on ${selectedField}.`
+                      };
+                      setProfileData(updatedProfile);
+                      try {
+                        localStorage.setItem(`vit_student_profile_${userKey}`, JSON.stringify(updatedProfile));
+                        localStorage.setItem(`vit_student_field_${userKey}`, selectedField);
+                        localStorage.setItem(`vit_student_goals_${userKey}`, JSON.stringify(selectedGoals));
+                        localStorage.setItem(`vit_student_onboarding_completed_${userKey}`, 'true');
+                      } catch (e) {}
+
+                      setHasCompletedOnboarding(true);
+                      setShowOnboardingModal(false);
+                      addToast(
+                        'Career Roadmap Initialized!',
+                        `Welcome ${profileData.name}! Your ${targetRoleInput} roadmap & mentor synergy engine are active.`,
+                        'success'
+                      );
+                    }}
+                    className="flex items-center space-x-1.5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#C99632] to-[#B38325] text-white text-xs font-black hover:opacity-95 shadow-lg transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4 text-white" />
+                    <span>Complete Onboarding & Launch Roadmap</span>
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
