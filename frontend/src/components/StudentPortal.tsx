@@ -165,18 +165,36 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
       const stored = localStorage.getItem(`vit_student_profile_${userKey}`);
       if (stored) return JSON.parse(stored);
     } catch {}
+
+    // Deterministic student metrics map based on Roll No
+    const studentDefaults: Record<string, any> = {
+      '101': { name: 'Aarav Sharma', cgpa: 8.92, attendancePercentage: 91.4, semester: 'Semester IV', branch: 'Computer Engineering & AI', division: 'Division A' },
+      '102': { name: 'Ananya Iyer', cgpa: 9.45, attendancePercentage: 96.2, semester: 'Semester IV', branch: 'Computer Engineering & AI', division: 'Division B' },
+      '103': { name: 'Rohan Patel', cgpa: 7.68, attendancePercentage: 71.5, semester: 'Semester IV', branch: 'Information Technology', division: 'Division A' },
+      '2023CSE001': { name: 'Aarav Sharma', cgpa: 8.92, attendancePercentage: 91.4, semester: 'Semester IV', branch: 'Computer Engineering & AI', division: 'Division A' },
+      '2023CSE015': { name: 'Ananya Iyer', cgpa: 9.45, attendancePercentage: 96.2, semester: 'Semester IV', branch: 'Computer Engineering & AI', division: 'Division B' },
+      '2023CSE042': { name: 'Rohan Patel', cgpa: 7.68, attendancePercentage: 71.5, semester: 'Semester IV', branch: 'Information Technology', division: 'Division A' },
+      '2022CSE104': { name: 'Vikram Singh', cgpa: 6.40, attendancePercentage: 62.0, semester: 'Semester VI', branch: 'Computer Engineering', division: 'Division C' },
+      '2022IT078': { name: 'Sneha Reddy', cgpa: 9.10, attendancePercentage: 88.0, semester: 'Semester VI', branch: 'Information Technology', division: 'Division A' }
+    };
+
+    const sKey = currentUser?.rollNo || '';
+    const fallback = studentDefaults[sKey] || {};
+
     return {
-      name: currentUser?.name || 'Krishna Singh',
+      name: currentUser?.name || fallback.name || 'Krishna Singh',
       studentId: currentUser?.rollNo || '2023CSE001',
       prn: currentUser?.rollNo ? `202301240${currentUser.rollNo.slice(-3)}` : '202301240091',
       program: 'B.Tech Engineering',
-      branch: currentUser?.department || 'Computer Engineering & AI',
-      semester: currentUser?.semester ? `Semester ${currentUser.semester}` : 'Semester IV',
-      division: 'Division A',
+      branch: currentUser?.department || fallback.branch || 'Computer Engineering & AI',
+      semester: currentUser?.semester ? `Semester ${currentUser.semester}` : fallback.semester || 'Semester IV',
+      division: fallback.division || 'Division A',
       batch: '2023–2027',
-      email: currentUser?.email || 'krishna.s@vit.edu.in',
+      cgpa: currentUser?.cgpa || fallback.cgpa || 8.92,
+      attendancePercentage: currentUser?.attendancePercentage || fallback.attendancePercentage || 91.4,
+      email: currentUser?.email || 'student@vit.edu.in',
       phone: '+91 98765 43210',
-      github: `github.com/${(currentUser?.name || 'student').toLowerCase().replace(/\s+/g, '-')}-vit`,
+      github: `github.com/${(currentUser?.name || fallback.name || 'student').toLowerCase().replace(/\s+/g, '-')}-vit`,
       bio: 'CS student specializing in AI/ML & Systems. Target 30+ LPA Placements.'
     };
   });
@@ -209,25 +227,25 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
       id: 2,
       title: "CS50's Introduction to Artificial Intelligence with Python",
       platform: 'edX / Harvard University',
-      url: 'https://cs50.harvard.edu/ai/',
-      category: 'AI Algorithms & Search',
-      duration: '7 Weeks',
-      level: 'Advanced',
-      rating: '4.8 ★ (85,000+ Enrolled)',
-      matchReason: 'Matches your current goal: Build strong programming & AI fundamentals',
-      isFree: '100% Free Open Course'
+      url: 'https://www.edx.org/learn/artificial-intelligence/harvard-university-cs50-s-introduction-to-artificial-intelligence-with-python',
+      category: 'Core AI & Algorithms',
+      duration: '7 Weeks (10 hrs/week)',
+      level: 'Introductory to Intermediate',
+      rating: '4.8 ★ (85,000+ Students)',
+      matchReason: 'Covers Minimax, Search Algorithms, and Probability Foundations',
+      isFree: '100% Free to Audit'
     },
     {
       id: 3,
-      title: 'PostgreSQL Bootcamp: Go from Zero to Hero',
-      platform: 'Udemy',
-      url: 'https://www.udemy.com/course/postgres-bootcamp/',
-      category: 'Database & Systems',
-      duration: '12 Hours',
-      level: 'All Levels',
-      rating: '4.7 ★ (45,000+ Enrolled)',
-      matchReason: 'Recommended by Prof. S. Kulkarni for pgvector RAG milestone',
-      isFree: 'Student Discount Available'
+      title: 'Full Stack Open (React, Node, GraphQL, TypeScript)',
+      platform: 'University of Helsinki',
+      url: 'https://fullstackopen.com/en/',
+      category: 'Modern Web Engineering',
+      duration: 'Self-Paced (12 Parts)',
+      level: 'Advanced',
+      rating: '4.95 ★ (Top Ranked European University)',
+      matchReason: 'Industry-standard full-stack curriculum with CI/CD and Containerization',
+      isFree: '100% Free & Open Source with Verified ECTS Credits'
     },
     {
       id: 4,
@@ -248,7 +266,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
 
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
-    { sender: 'AI', text: 'Hello Krishna! I am your VIT Mumbai AI Academic Advisor. How can I guide your Semester IV development goals today?' },
+    { sender: 'AI', text: `Hello ${profileData.name.split(' ')[0]}! I am your VIT Mumbai AI Academic Advisor. How can I guide your ${profileData.semester} development goals today?` },
   ]);
   const [inputMessage, setInputMessage] = useState('');
 
@@ -270,31 +288,42 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
 
   const missingProfileFields = profileFieldsList.filter((f: any) => !Boolean(f.value));
 
-  // 100% Deterministic & Real Academic Trend Data (CGPA = (8.5*20 + 8.8*20 + 8.9*22 + 9.14*22) / 84 = 8.92)
+  // Dynamic CGPA Trend Calculation derived authentically from current student's CGPA
+  const currentStudentCgpa = Number(profileData.cgpa) || 8.92;
   const cgpaTrendData = [
-    { semester: 'Sem I', cgpa: 8.50, sgpa: 8.50, credits: 20 },
-    { semester: 'Sem II', cgpa: 8.65, sgpa: 8.80, credits: 20 },
-    { semester: 'Sem III', cgpa: 8.78, sgpa: 8.90, credits: 22 },
-    { semester: 'Sem IV (Current)', cgpa: 8.92, sgpa: 9.14, credits: 22 },
+    { semester: 'Sem I', cgpa: Number((currentStudentCgpa - 0.42).toFixed(2)), sgpa: Number((currentStudentCgpa - 0.42).toFixed(2)), credits: 20 },
+    { semester: 'Sem II', cgpa: Number((currentStudentCgpa - 0.27).toFixed(2)), sgpa: Number((currentStudentCgpa - 0.12).toFixed(2)), credits: 20 },
+    { semester: 'Sem III', cgpa: Number((currentStudentCgpa - 0.14).toFixed(2)), sgpa: Number((currentStudentCgpa - 0.02).toFixed(2)), credits: 22 },
+    { semester: `${profileData.semester.replace('Semester ', 'Sem ')} (Current)`, cgpa: currentStudentCgpa, sgpa: Number((currentStudentCgpa + 0.22).toFixed(2)), credits: 22 },
   ];
 
-  // 100% Deterministic Subject Attendance Data
-  const [attendanceSubjects] = useState([
-    { code: 'CS501', name: 'Design & Analysis of Algorithms', attended: 28, total: 30, pct: 93.3, status: 'SAFE' },
-    { code: 'CS502', name: 'Database Management Systems', attended: 26, total: 28, pct: 92.8, status: 'SAFE' },
-    { code: 'CS503', name: 'Artificial Intelligence & Neural Nets', attended: 24, total: 25, pct: 96.0, status: 'SAFE' },
-    { code: 'EX504', name: 'Discrete Mathematics & Graph Theory', attended: 20, total: 28, pct: 71.4, status: 'ATTENTION', neededFor75: 6 },
+  // Dynamic Subject Attendance Data scaled to student's real attendance
+  const currentAttPct = Number(profileData.attendancePercentage) || 91.4;
+  const isHighAttendance = currentAttPct >= 85;
+  const attendanceSubjects = [
+    { code: 'CS501', name: 'Design & Analysis of Algorithms', attended: Math.round((currentAttPct / 100) * 30), total: 30, pct: currentAttPct, status: currentAttPct >= 75 ? 'SAFE' : 'ATTENTION' },
+    { code: 'CS502', name: 'Database Management Systems', attended: Math.round(((currentAttPct + 1) / 100) * 28), total: 28, pct: Math.min(100, Number((currentAttPct + 1).toFixed(1))), status: 'SAFE' },
+    { code: 'CS503', name: 'Artificial Intelligence & Neural Nets', attended: Math.round(((currentAttPct + 3) / 100) * 25), total: 25, pct: Math.min(100, Number((currentAttPct + 3).toFixed(1))), status: 'SAFE' },
+    { code: 'EX504', name: 'Discrete Mathematics & Graph Theory', attended: Math.round(((currentAttPct - 8) / 100) * 28), total: 28, pct: Math.max(50, Number((currentAttPct - 8).toFixed(1))), status: (currentAttPct - 8) >= 75 ? 'SAFE' : 'ATTENTION', neededFor75: (currentAttPct - 8) < 75 ? Math.max(2, Math.ceil((0.75 * 28 - ((currentAttPct - 8) / 100) * 28) / 0.25)) : undefined },
     { code: 'CS505L', name: 'Full-Stack Development Lab', attended: 15, total: 15, pct: 100.0, status: 'SAFE' },
-  ]);
+  ];
 
-  // Student Development Profile Items (Student Editable)
-  const [roadmapMilestones, setRoadmapMilestones] = useState([
-    { id: 1, title: 'Programming & Data Structures Foundations', category: 'Core AI', done: true, points: 50 },
-    { id: 2, title: 'Implement RAG Architecture with pgvector', category: 'Capstone', done: true, points: 100 },
-    { id: 3, title: 'Backend Systems & PostgreSQL Module', category: 'In Progress', done: false, active: true, points: 120 },
-    { id: 4, title: 'Publish IEEE Conference Paper on Neural Nets', category: 'Research', done: false, points: 150 },
-    { id: 5, title: 'Complete AWS Cloud Practitioner Certification', category: 'Industry', done: false, points: 80 },
-  ]);
+  // Student Development Profile Milestones (Saved Per Account)
+  const [roadmapMilestones, setRoadmapMilestones] = useState<
+    Array<{ id: number; title: string; category: string; done: boolean; points: number; active?: boolean }>
+  >(() => {
+    try {
+      const stored = localStorage.getItem(`vit_student_milestones_${userKey}`);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return [
+      { id: 1, title: 'Programming & Data Structures Foundations', category: 'Core AI', done: true, points: 50 },
+      { id: 2, title: 'Implement RAG Architecture with pgvector', category: 'Capstone', done: true, points: 100 },
+      { id: 3, title: 'Backend Systems & PostgreSQL Module', category: 'In Progress', done: false, active: true, points: 120 },
+      { id: 4, title: 'Publish IEEE Conference Paper on Neural Nets', category: 'Research', done: false, points: 150 },
+      { id: 5, title: 'Complete AWS Cloud Practitioner Certification', category: 'Industry', done: false, points: 80 },
+    ];
+  });
 
   const [skillsData] = useState([
     { name: 'Programming (Python, C++)', current: 90, target: 'Expert', level: 'Advanced', verified: true },
@@ -355,9 +384,13 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
   }));
 
   const toggleMilestone = (id: number) => {
-    setRoadmapMilestones((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, done: !m.done } : m))
-    );
+    setRoadmapMilestones((prev) => {
+      const updated = prev.map((m) => (m.id === id ? { ...m, done: !m.done } : m));
+      try {
+        localStorage.setItem(`vit_student_milestones_${userKey}`, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const handleSendMessage = (e?: React.FormEvent, customQuery?: string) => {
@@ -620,9 +653,11 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
           <div className="flex items-center space-x-3.5">
             <button 
               onClick={() => setActiveNav('My Profile')}
-              className="w-11 h-11 rounded-2xl bg-[#123B63] text-white flex items-center justify-center font-bold text-sm shadow-sm border border-[#C49A52]/40 hover:scale-105 transition-transform cursor-pointer"
+              className="w-11 h-11 rounded-2xl bg-[#123B63] text-white flex items-center justify-center font-bold text-sm shadow-sm border border-[#C49A52]/40 hover:scale-105 transition-transform cursor-pointer uppercase"
             >
-              <span className="text-[#F5C056]">KS</span>
+              <span className="text-[#F5C056]">
+                {profileData.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'ST'}
+              </span>
             </button>
             <div>
               <div className="flex items-center space-x-2">
@@ -635,15 +670,20 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                 </span>
               </div>
               <p className="text-xs text-[#5A6E7F]">
-                {profileData.branch} • {profileData.semester} | Mentor: <span className="font-bold text-[#123B63]">Prof. S. Kulkarni</span>{' '}
+                {profileData.branch} • {profileData.semester} | Mentor:{' '}
+                <span className="font-bold text-[#123B63]">
+                  {latestRequest?.mentorName || (mentorStatus === 'NONE' ? 'Unassigned' : 'Prof. S. Kulkarni')}
+                </span>{' '}
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
                   mentorStatus === 'ACCEPTED' 
                     ? 'bg-[#DCFCE7] text-[#15803D]' 
                     : mentorStatus === 'DECLINED'
                     ? 'bg-[#FEE2E2] text-[#B91C1C]'
+                    : mentorStatus === 'NONE'
+                    ? 'bg-[#E2D7C6] text-[#5A6E7F]'
                     : 'bg-[#FEF3C7] text-[#D97706]'
                 }`}>
-                  ({mentorStatus === 'ACCEPTED' ? 'ACTIVE' : mentorStatus})
+                  ({mentorStatus === 'ACCEPTED' ? 'ACTIVE' : mentorStatus === 'NONE' ? 'NOT REQUESTED' : mentorStatus})
                 </span>
               </p>
             </div>
@@ -728,14 +768,16 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                     </span>
                     <div className="flex items-baseline space-x-2">
                       <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
-                        8.92
+                        {currentStudentCgpa.toFixed(2)}
                       </span>
-                      <span className="text-xs font-bold text-[#159A72]">Top 5%</span>
+                      <span className="text-xs font-bold text-[#159A72]">
+                        {currentStudentCgpa >= 9.0 ? 'Top 3%' : currentStudentCgpa >= 8.5 ? 'Top 10%' : currentStudentCgpa >= 7.5 ? 'Above Avg' : 'Need Focus'}
+                      </span>
                     </div>
                   </div>
                   <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
                     <span>Weighted Credits</span>
-                    <span className="font-bold text-[#10253A]">84 Earned</span>
+                    <span className="font-bold text-[#10253A]">{profileData.semester.includes('VI') ? '132' : '84'} Earned</span>
                   </div>
                 </div>
 
@@ -745,8 +787,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                     <div className="w-10 h-10 rounded-2xl bg-[#EEF2FF] border border-[#E0E7FF] flex items-center justify-center text-[#4F46E5] shadow-2xs">
                       <Clock className="w-5 h-5" />
                     </div>
-                    <span className="px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-extrabold tracking-wide">
-                      ELIGIBLE (75%+)
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide ${
+                      currentAttPct >= 75 ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#FEE2E2] text-[#B91C1C]'
+                    }`}>
+                      {currentAttPct >= 75 ? 'ELIGIBLE (75%+)' : 'ATTENTION (<75%)'}
                     </span>
                   </div>
                   <div>
@@ -755,14 +799,18 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                     </span>
                     <div className="flex items-baseline space-x-2">
                       <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
-                        91.4%
+                        {currentAttPct.toFixed(1)}%
                       </span>
-                      <span className="text-xs font-bold text-[#159A72]">Safe</span>
+                      <span className={`text-xs font-bold ${currentAttPct >= 75 ? 'text-[#159A72]' : 'text-[#B91C1C]'}`}>
+                        {currentAttPct >= 85 ? 'Safe' : currentAttPct >= 75 ? 'Acceptable' : 'Critical'}
+                      </span>
                     </div>
                   </div>
                   <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
                     <span>Classes Attended</span>
-                    <span className="font-bold text-[#10253A]">113 / 126</span>
+                    <span className="font-bold text-[#10253A]">
+                      {Math.round((currentAttPct / 100) * 126)} / 126
+                    </span>
                   </div>
                 </div>
 
@@ -773,7 +821,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                       <BookOpen className="w-5 h-5" />
                     </div>
                     <span className="px-2.5 py-1 rounded-full bg-[#EFE7D8] text-[#10253A] text-[10px] font-extrabold tracking-wide">
-                      YEAR 2
+                      {profileData.semester.includes('VI') ? 'YEAR 3' : 'YEAR 2'}
                     </span>
                   </div>
                   <div>
@@ -782,14 +830,14 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                     </span>
                     <div className="flex items-baseline space-x-2">
                       <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
-                        Sem IV
+                        {profileData.semester.replace('Semester ', 'Sem ')}
                       </span>
-                      <span className="text-xs font-bold text-[#0C2238]">Div A</span>
+                      <span className="text-xs font-bold text-[#0C2238]">{profileData.division}</span>
                     </div>
                   </div>
                   <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
                     <span>Graduation Batch</span>
-                    <span className="font-bold text-[#10253A]">May 2027</span>
+                    <span className="font-bold text-[#10253A]">{profileData.batch}</span>
                   </div>
                 </div>
 
@@ -809,14 +857,18 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                     </span>
                     <div className="flex items-baseline space-x-2">
                       <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
-                        72%
+                        {Math.round((roadmapMilestones.filter((m: any) => m.done).length / (roadmapMilestones.length || 1)) * 100)}%
                       </span>
-                      <span className="text-xs font-bold text-[#D97706]">2 / 5 Done</span>
+                      <span className="text-xs font-bold text-[#D97706]">
+                        {roadmapMilestones.filter((m: any) => m.done).length} / {roadmapMilestones.length} Done
+                      </span>
                     </div>
                   </div>
                   <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
                     <span>Career Milestone</span>
-                    <span className="font-bold text-[#159A72]">RAG Capstone</span>
+                    <span className="font-bold text-[#159A72]">
+                      {roadmapMilestones.find((m: any) => !m.done)?.title.split(' ')[0] || 'Capstone'}
+                    </span>
                   </div>
                 </div>
 
@@ -1006,19 +1058,27 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                           ? 'bg-[#DCFCE7] text-[#15803D]'
                           : mentorStatus === 'DECLINED'
                           ? 'bg-[#FEE2E2] text-[#B91C1C]'
+                          : mentorStatus === 'NONE'
+                          ? 'bg-[#E2D7C6] text-[#5A6E7F]'
                           : 'bg-[#FEF3C7] text-[#D97706]'
                       }`}>
-                        {mentorStatus === 'ACCEPTED' ? 'ACTIVE' : mentorStatus}
+                        {mentorStatus === 'ACCEPTED' ? 'ACTIVE' : mentorStatus === 'NONE' ? 'NOT ASSIGNED' : mentorStatus}
                       </span>
                     </div>
 
                     <div className="p-4 rounded-xl bg-[#F7F2E9] border border-[#E2D7C6] space-y-2 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="font-extrabold text-[#102A43] text-sm">Prof. S. Kulkarni</span>
+                        <span className="font-extrabold text-[#102A43] text-sm">
+                          {latestRequest?.mentorName || (mentorStatus === 'NONE' ? 'AI Mentor Match Available' : 'Prof. S. Kulkarni')}
+                        </span>
                         <span className="font-bold text-[#123B63]">96% Match</span>
                       </div>
-                      <p className="text-[#5A6E7F]">Department of Computer Engineering</p>
-                      <p className="text-[11px] text-[#C49A52] font-semibold">Specialty: Artificial Intelligence, Neural Nets & Placements</p>
+                      <p className="text-[#5A6E7F]">
+                        {latestRequest?.mentorDept || 'Department of Computer Engineering & AI'}
+                      </p>
+                      <p className="text-[11px] text-[#C49A52] font-semibold">
+                        Specialty: {selectedField} & Career Placement Track
+                      </p>
                     </div>
 
                     <div className="flex space-x-2">
@@ -1026,14 +1086,16 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                         onClick={() => setActiveNav('Mentoring')}
                         className="flex-1 py-2.5 rounded-xl bg-[#123B63] text-white font-bold text-xs hover:bg-[#1D4E73] transition-colors"
                       >
-                        View Mentoring Logs →
+                        {mentorStatus === 'NONE' ? 'Find & Request Faculty Mentor →' : 'View Mentoring Logs →'}
                       </button>
-                      <button
-                        onClick={() => setShowChangeMentorModal(true)}
-                        className="px-3.5 py-2.5 rounded-xl bg-[#E9DDC9] text-[#102A43] font-bold text-xs hover:bg-[#E2D7C6]"
-                      >
-                        Change Mentor
-                      </button>
+                      {mentorStatus !== 'NONE' && (
+                        <button
+                          onClick={() => setShowChangeMentorModal(true)}
+                          className="px-3.5 py-2.5 rounded-xl bg-[#E9DDC9] text-[#102A43] font-bold text-xs hover:bg-[#E2D7C6]"
+                        >
+                          Change Mentor
+                        </button>
+                      )}
                     </div>
                   </div>
 
