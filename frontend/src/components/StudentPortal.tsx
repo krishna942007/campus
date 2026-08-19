@@ -209,57 +209,324 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
   const [changeReason, setChangeReason] = useState('Shift in specialization track');
   const [showWhySeeingInsight, setShowWhySeeingInsight] = useState(false);
 
-  // 100% REAL ONLINE COURSES RECOMMENDED BY AI
-  const [aiRecommendedCourses] = useState([
-    {
-      id: 1,
-      title: 'Deep Learning Specialization by Andrew Ng',
-      platform: 'Coursera / DeepLearning.AI',
-      url: 'https://www.coursera.org/specializations/deep-learning',
-      category: 'AI & Neural Networks',
-      duration: '16 Weeks (4 hrs/week)',
-      level: 'Intermediate',
-      rating: '4.9 ★ (120,000+ Enrolled)',
-      matchReason: 'Direct alignment with your CS503 AI course & AI/ML placement goal',
-      isFree: 'Audit Free / Certificate Paid'
-    },
-    {
-      id: 2,
-      title: "CS50's Introduction to Artificial Intelligence with Python",
-      platform: 'edX / Harvard University',
-      url: 'https://www.edx.org/learn/artificial-intelligence/harvard-university-cs50-s-introduction-to-artificial-intelligence-with-python',
-      category: 'Core AI & Algorithms',
-      duration: '7 Weeks (10 hrs/week)',
-      level: 'Introductory to Intermediate',
-      rating: '4.8 ★ (85,000+ Students)',
-      matchReason: 'Covers Minimax, Search Algorithms, and Probability Foundations',
-      isFree: '100% Free to Audit'
-    },
-    {
-      id: 3,
-      title: 'Full Stack Open (React, Node, GraphQL, TypeScript)',
-      platform: 'University of Helsinki',
-      url: 'https://fullstackopen.com/en/',
-      category: 'Modern Web Engineering',
-      duration: 'Self-Paced (12 Parts)',
-      level: 'Advanced',
-      rating: '4.95 ★ (Top Ranked European University)',
-      matchReason: 'Industry-standard full-stack curriculum with CI/CD and Containerization',
-      isFree: '100% Free & Open Source with Verified ECTS Credits'
-    },
-    {
-      id: 4,
-      title: 'Design and Analysis of Algorithms by Prof. Madhavan Mukund',
-      platform: 'NPTEL / IIT Madras (SWAYAM)',
-      url: 'https://onlinecourses.nptel.ac.in/noc26_cs01/preview',
-      category: 'Core Algorithms',
-      duration: '8 Weeks',
-      level: 'Advanced',
-      rating: '4.9 ★ (Official Indian Academic)',
-      matchReason: 'Directly supports CS501 curriculum & GATE CSE preparation',
-      isFree: '100% Free / Govt Certified'
-    }
-  ]);
+  // 100% REAL ONLINE COURSES DYNAMICALLY MATCHED TO SELECTED CAREER GOAL & FIELD
+  const aiRecommendedCourses = React.useMemo(() => {
+    const catalogByField: Record<string, Array<{
+      id: number;
+      title: string;
+      platform: string;
+      url: string;
+      category: string;
+      duration: string;
+      level: string;
+      rating: string;
+      matchReason: string;
+      isFree: string;
+    }>> = {
+      'AI / Machine Learning': [
+        {
+          id: 101,
+          title: 'Deep Learning Specialization by Andrew Ng',
+          platform: 'Coursera / DeepLearning.AI',
+          url: 'https://www.coursera.org/specializations/deep-learning',
+          category: 'AI & Neural Networks',
+          duration: '16 Weeks (4 hrs/week)',
+          level: 'Intermediate',
+          rating: '4.9 ★ (120,000+ Enrolled)',
+          matchReason: `Directly tailored for ${targetRoleInput || 'AI Engineer'} to master CNNs, RNNs, Transformers & PyTorch foundations.`,
+          isFree: 'Audit Free / Certificate Paid'
+        },
+        {
+          id: 102,
+          title: "CS50's Introduction to Artificial Intelligence with Python",
+          platform: 'edX / Harvard University',
+          url: 'https://www.edx.org/learn/artificial-intelligence/harvard-university-cs50-s-introduction-to-artificial-intelligence-with-python',
+          category: 'Core AI & Search Algorithms',
+          duration: '7 Weeks (10 hrs/week)',
+          level: 'Introductory to Intermediate',
+          rating: '4.8 ★ (85,000+ Students)',
+          matchReason: 'Covers Minimax, A* Graph Search, Probabilistic Inference & Neural Classifiers.',
+          isFree: '100% Free to Audit'
+        },
+        {
+          id: 103,
+          title: 'Hugging Face Transformers & NLP Course',
+          platform: 'Hugging Face Open Academy',
+          url: 'https://huggingface.co/learn/nlp-course/chapter1/1',
+          category: 'LLMs & Modern NLP',
+          duration: 'Self-Paced (8 Chapters)',
+          level: 'Advanced',
+          rating: '4.95 ★ (Industry Standard)',
+          matchReason: 'Essential for building production RAG vector pipelines and fine-tuning open-source LLMs.',
+          isFree: '100% Free & Open Source'
+        },
+        {
+          id: 104,
+          title: 'Stanford CS231n: Deep Learning for Computer Vision',
+          platform: 'Stanford Online / YouTube',
+          url: 'https://cs231n.stanford.edu/',
+          category: 'Computer Vision & Vision Transformers',
+          duration: '10 Weeks',
+          level: 'Advanced',
+          rating: '4.9 ★ (Top Stanford Curriculum)',
+          matchReason: 'World-renowned vision course covering object detection, diffusion models & GANs.',
+          isFree: '100% Free Lecture Materials'
+        }
+      ],
+      'Cyber Security & Web3': [
+        {
+          id: 201,
+          title: 'Google Cybersecurity Professional Certificate',
+          platform: 'Coursera / Google Career Certificates',
+          url: 'https://www.coursera.org/professional-certificates/google-cybersecurity',
+          category: 'Cyber Defense & SIEM',
+          duration: '12 Weeks (6 hrs/week)',
+          level: 'Beginner to Intermediate',
+          rating: '4.8 ★ (350,000+ Learners)',
+          matchReason: `Customized for your ${targetRoleInput || 'Security Analyst'} track: Network security, Linux forensics, SQL injection defense & Python automation.`,
+          isFree: 'Audit Free / Certified'
+        },
+        {
+          id: 202,
+          title: 'Stanford CS251: Cryptocurrencies and Blockchain Technologies',
+          platform: 'Stanford University Online',
+          url: 'https://cs251.stanford.edu/',
+          category: 'Web3 & Cryptography',
+          duration: '10 Weeks',
+          level: 'Advanced',
+          rating: '4.9 ★ (Stanford Flagship)',
+          matchReason: 'Covers zero-knowledge proofs, consensus mechanisms, smart contract VM internals and cryptographic hashes.',
+          isFree: '100% Free Open Course'
+        },
+        {
+          id: 203,
+          title: 'Practical Ethical Hacking & Penetration Testing',
+          platform: 'TCM Security Academy',
+          url: 'https://academy.tcm-sec.com/p/practical-ethical-hacking-the-complete-course',
+          category: 'Ethical Hacking & Red Teaming',
+          duration: '25 Hours Hands-on Labs',
+          level: 'Intermediate to Advanced',
+          rating: '4.95 ★ (Top Industry Practical)',
+          matchReason: 'Hands-on Active Directory attacks, web app exploitation, OWASP Top 10 & buffer overflows.',
+          isFree: 'Student Pricing Available'
+        },
+        {
+          id: 204,
+          title: 'Smart Contract Security & Web3 Auditing (Cyfrin Updraft)',
+          platform: 'Cyfrin Updraft / Patrick Collins',
+          url: 'https://updraft.cyfrin.io/',
+          category: 'Solidity & Smart Contract Audits',
+          duration: '40 Hours Project Labs',
+          level: 'Advanced',
+          rating: '4.9 ★ (Leading Security Hub)',
+          matchReason: 'Prepares you for high-paying Web3 smart contract bug bounties and DeFi protocol security.',
+          isFree: '100% Free & Open'
+        }
+      ],
+      'Full Stack Systems': [
+        {
+          id: 301,
+          title: 'Full Stack Open (React, Node, GraphQL, TypeScript)',
+          platform: 'University of Helsinki',
+          url: 'https://fullstackopen.com/en/',
+          category: 'Modern Web Engineering',
+          duration: 'Self-Paced (12 Parts)',
+          level: 'Advanced',
+          rating: '4.95 ★ (Top Ranked European University)',
+          matchReason: `Directly tailored for ${targetRoleInput || 'Full Stack Systems Engineer'}: Covers React, Node, Express, MongoDB, GraphQL, TypeScript & CI/CD.`,
+          isFree: '100% Free with ECTS Credits'
+        },
+        {
+          id: 302,
+          title: "CS50W: Web Programming with Python and JavaScript",
+          platform: 'Harvard University / edX',
+          url: 'https://cs50.harvard.edu/web/',
+          category: 'Web Architecture & Databases',
+          duration: '12 Weeks',
+          level: 'Intermediate',
+          rating: '4.8 ★ (200,000+ Students)',
+          matchReason: 'Focuses on Django backend architectures, database migrations, security best practices and REST APIs.',
+          isFree: '100% Free Course'
+        },
+        {
+          id: 303,
+          title: 'System Design Primer & High-Scale Backend Architecture',
+          platform: 'GitHub Open Standard',
+          url: 'https://github.com/donnemartin/system-design-primer',
+          category: 'Distributed Systems & Scalability',
+          duration: 'Self-Paced Guide',
+          level: 'Advanced',
+          rating: '5.0 ★ (260,000+ GitHub Stars)',
+          matchReason: 'Essential for Tier-1 placement interviews: Load balancers, microservices caching, database sharding & CDN setups.',
+          isFree: '100% Open Source'
+        },
+        {
+          id: 304,
+          title: 'PostgreSQL Bootcamp: High Performance Databases',
+          platform: 'Udemy / Open Engineering',
+          url: 'https://www.udemy.com/course/postgres-bootcamp/',
+          category: 'Databases & Query Optimization',
+          duration: '12 Hours',
+          level: 'Intermediate',
+          rating: '4.7 ★ (45,000+ Enrolled)',
+          matchReason: 'Covers indexing strategies, ACID transaction locks, and pgvector integrations.',
+          isFree: 'Student Discount Available'
+        }
+      ],
+      'Cloud & DevOps SRE': [
+        {
+          id: 401,
+          title: 'AWS Certified Solutions Architect Associate Path',
+          platform: 'AWS Skill Builder / AWS Official',
+          url: 'https://explore.skillbuilder.aws/',
+          category: 'Cloud Infrastructure & VPCs',
+          duration: '8 Weeks',
+          level: 'Intermediate to Advanced',
+          rating: '4.9 ★ (Official AWS Accreditation)',
+          matchReason: `Prepares you for ${targetRoleInput || 'Cloud SRE'}: EC2 compute, S3 buckets, IAM roles, Lambda serverless & VPC networking.`,
+          isFree: 'Free Official Training'
+        },
+        {
+          id: 402,
+          title: 'Kubernetes for Developers (CKAD Mastery)',
+          platform: 'Linux Foundation / CNCF',
+          url: 'https://training.linuxfoundation.org/',
+          category: 'Container Orchestration',
+          duration: '6 Weeks',
+          level: 'Advanced',
+          rating: '4.85 ★ (CNCF Certified)',
+          matchReason: 'Production pod deployments, ingress controllers, config maps, persistent volumes & Helm charts.',
+          isFree: 'Open Community Guides'
+        },
+        {
+          id: 403,
+          title: 'MIT 6.824: Distributed Systems',
+          platform: 'MIT OpenCourseWare',
+          url: 'https://pdos.csail.mit.edu/6.824/',
+          category: 'Raft Consensus & Distributed Fault Tolerance',
+          duration: '12 Weeks',
+          level: 'Advanced / Research',
+          rating: '5.0 ★ (Gold Standard Engineering Course)',
+          matchReason: 'Deep dive into MapReduce, Raft consensus algorithm, distributed transactions and high availability.',
+          isFree: '100% Free Course Material'
+        },
+        {
+          id: 404,
+          title: 'Terraform & Infrastructure as Code (IaC) Masterclass',
+          platform: 'HashiCorp Learning Portal',
+          url: 'https://developer.hashicorp.com/terraform/tutorials',
+          category: 'DevOps & GitOps Automation',
+          duration: '4 Weeks',
+          level: 'Intermediate',
+          rating: '4.8 ★ (Official HashiCorp)',
+          matchReason: 'Automate zero-downtime multi-cloud provisioning with reusable Terraform modules & GitHub Actions.',
+          isFree: '100% Free Tutorials'
+        }
+      ],
+      'Data Science & Big Data': [
+        {
+          id: 501,
+          title: 'MIT 6.0002: Computational Thinking and Data Science',
+          platform: 'MIT / edX',
+          url: 'https://ocw.mit.edu/courses/6-0002-introduction-to-computational-thinking-and-data-science-fall-2016/',
+          category: 'Statistical Modeling & Data Analytics',
+          duration: '9 Weeks',
+          level: 'Intermediate',
+          rating: '4.9 ★ (MIT Flagship)',
+          matchReason: `Targeted for ${targetRoleInput || 'Data Scientist'}: Monte Carlo simulations, stochastic programs, curve fitting & clustering.`,
+          isFree: '100% Free to Access'
+        },
+        {
+          id: 502,
+          title: 'IBM Data Science Professional Certificate',
+          platform: 'Coursera / IBM',
+          url: 'https://www.coursera.org/professional-certificates/ibm-data-science',
+          category: 'Applied Data Science & Pandas',
+          duration: '10 Weeks (5 hrs/week)',
+          level: 'Beginner to Intermediate',
+          rating: '4.7 ★ (600,000+ Enrolled)',
+          matchReason: 'Comprehensive labs with Python, SQL, Jupyter, Scikit-Learn and data visualization.',
+          isFree: 'Audit Free / Certified'
+        },
+        {
+          id: 503,
+          title: 'Distributed Big Data with Apache Spark & Databricks',
+          platform: 'Databricks Academy',
+          url: 'https://www.databricks.com/learn/training/home',
+          category: 'Big Data & Spark Streaming',
+          duration: '6 Weeks',
+          level: 'Advanced',
+          rating: '4.85 ★ (Industry Big Data Standard)',
+          matchReason: 'ETL pipelines on petabyte-scale data lakes with PySpark, Delta Lake and Databricks clusters.',
+          isFree: 'Free Student Tier'
+        },
+        {
+          id: 504,
+          title: 'Google Cloud Big Data and Machine Learning Fundamentals',
+          platform: 'Google Cloud Training',
+          url: 'https://www.cloudskillsboost.google/',
+          category: 'BigQuery & Cloud Data Warehousing',
+          duration: '3 Weeks',
+          level: 'Intermediate',
+          rating: '4.8 ★ (Official Google Cloud)',
+          matchReason: 'Modern SQL data analytics in Google BigQuery, Dataproc and real-time Pub/Sub streams.',
+          isFree: 'Free Credits for Students'
+        }
+      ],
+      'Embedded & IoT Systems': [
+        {
+          id: 601,
+          title: 'MIT 6.004: Computation Structures & Embedded Microcontrollers',
+          platform: 'MIT OpenCourseWare',
+          url: 'https://ocw.mit.edu/courses/6-004-computation-structures-spring-2017/',
+          category: 'Computer Architecture & Assembly',
+          duration: '12 Weeks',
+          level: 'Advanced',
+          rating: '4.9 ★ (MIT Architecture)',
+          matchReason: `Customized for ${targetRoleInput || 'Embedded Systems Engineer'}: RISC-V processors, caches, pipeline registers & memory hierarchies.`,
+          isFree: '100% Free Materials'
+        },
+        {
+          id: 602,
+          title: 'ARM Cortex-M Embedded Systems Programming in C',
+          platform: 'ARM University Program / edX',
+          url: 'https://www.edx.org/learn/embedded-systems',
+          category: 'Microcontroller Firmware',
+          duration: '8 Weeks',
+          level: 'Intermediate',
+          rating: '4.8 ★ (ARM Official)',
+          matchReason: 'Low-level hardware register programming, interrupts, DMA controllers, timers and I2C/SPI interfaces.',
+          isFree: 'Audit Free'
+        },
+        {
+          id: 603,
+          title: 'TinyML: Applications of Tiny Machine Learning on Edge Hardware',
+          platform: 'Harvard University / edX',
+          url: 'https://www.edx.org/learn/machine-learning/harvard-university-applications-of-tinyml',
+          category: 'Edge AI & Microcontrollers',
+          duration: '6 Weeks',
+          level: 'Intermediate to Advanced',
+          rating: '4.9 ★ (Harvard & Google)',
+          matchReason: 'Deploying neural networks on Arduino, ESP32 and STM32 boards with TensorFlow Lite for Microcontrollers.',
+          isFree: '100% Free to Audit'
+        },
+        {
+          id: 604,
+          title: 'ROS 2 (Robot Operating System) for Autonomous Mobile Robots',
+          platform: 'ConstructSim / Open Robotics',
+          url: 'https://www.theconstructsim.com/robotigniteacademy_learnros/ros2-basics-course-python/',
+          category: 'Robotics & Autonomous Systems',
+          duration: '8 Weeks',
+          level: 'Advanced',
+          rating: '4.85 ★ (Global Robotics Hub)',
+          matchReason: 'Real-time robotics nodes, topics, actions, SLAM navigation and sensor fusion (LiDAR + IMU).',
+          isFree: 'Free Intro Modules'
+        }
+      ]
+    };
+
+    return catalogByField[selectedField] || catalogByField['AI / Machine Learning'];
+  }, [selectedField, targetRoleInput]);
 
   const [selectedAssignmentModal, setSelectedAssignmentModal] = useState<any | null>(null);
   const [submissionFileName, setSubmissionFileName] = useState('');
@@ -1378,12 +1645,15 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                 </div>
 
                 <div className="space-y-3 text-xs">
-                  {(storeState.assignedOnlineCourses || []).length === 0 ? (
-                    <p className="text-xs text-[#5A6E7F] italic p-4 bg-[#F7F2E9] rounded-xl text-center">
-                      No specific online courses assigned by mentor yet.
-                    </p>
+                  {((storeState.assignedOnlineCourses || []).filter((ac: any) => !ac.studentId || ac.studentId === profileData.studentId || ac.studentId === 'ALL')).length === 0 ? (
+                    <div className="p-5 bg-[#F7F2E9] border border-[#E2D7C6] rounded-xl text-center space-y-1">
+                      <p className="text-xs font-bold text-[#102A43]">No custom coursework assigned yet.</p>
+                      <p className="text-[11px] text-[#5A6E7F]">Once your faculty mentor reviews your {selectedField} milestones, assigned external study modules will appear here.</p>
+                    </div>
                   ) : (
-                    (storeState.assignedOnlineCourses || []).map((ac: any) => (
+                    (storeState.assignedOnlineCourses || [])
+                      .filter((ac: any) => !ac.studentId || ac.studentId === profileData.studentId || ac.studentId === 'ALL')
+                      .map((ac: any) => (
                       <div key={ac.id} className="p-4 rounded-xl bg-[#F7F2E9] border border-[#E2D7C6] space-y-2">
                         <div className="flex items-center justify-between font-bold">
                           <div className="flex items-center space-x-2">
@@ -1419,13 +1689,20 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
 
               {/* 2. AI RECOMMENDED REAL ONLINE COURSES */}
               <div className="bg-[#FFFDF8] rounded-2xl p-6 border border-[#E2D7C6] shadow-xs space-y-4">
-                <div className="flex items-center justify-between border-b border-[#E2D7C6] pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E2D7C6] pb-3 gap-2">
                   <div className="flex items-center space-x-2">
                     <Sparkles className="w-5 h-5 text-[#C49A52]" />
-                    <h3 className="text-base font-extrabold text-[#102A43]">AI-Recommended 100% Real Online Courses</h3>
+                    <div>
+                      <h3 className="text-base font-extrabold text-[#102A43]">
+                        AI-Recommended Curriculum for {selectedField}
+                      </h3>
+                      <p className="text-[11px] text-[#5A6E7F]">
+                        Precision-matched to your career goal: <strong className="text-[#123B63]">{targetRoleInput || 'Engineer'}</strong>
+                      </p>
+                    </div>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#E9DDC9] text-[#102A43] text-[10px] font-bold">
-                    RECOMMENDED FOR GOAL
+                  <span className="px-3 py-1 rounded-full bg-[#E9DDC9] text-[#102A43] text-[10px] font-extrabold uppercase self-start sm:self-auto">
+                    {selectedField} TRACK
                   </span>
                 </div>
 
