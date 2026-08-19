@@ -255,12 +255,13 @@ npm run build:backend
 
 ---
 
-## 🔮 9. Next Steps & Recommended Enhancements for Antigravity
+## 🔮 9. Recent Architectural Milestones Completed
 
-1. **Backend Integration**: Connect `src/services/` to a real **Supabase / PostgreSQL** or **Node.js/Fastify** backend replacing `localStorage`.
-2. **Live Vector Embeddings**: Hook `ChatGPTAIWorkspace.tsx` to a real pgvector / LangChain / Google Gemini API endpoint for live PDF indexing.
-3. **Role-Based Auth Guarding**: Implement JWT/OAuth authentication with Supabase Auth or NextAuth.
-4. **WebSocket Notifications**: Upgrade `storage` events to live WebSockets for instant multi-user messaging and live meeting notifications.
+1. **MongoDB Atlas & Database Seeding**: Connected live MongoDB Atlas with complete seeded collections for Students, Faculty Mentors, Assignments, Courses, and Schedules. Added 5 simple accounts (`101`, `102`, `103`, `T101`, `T102`).
+2. **Gemini 2.5 Flash RAG Engine**: Live integration in [`backend/src/services/aiService.js`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/backend/src/services/aiService.js) with soft authentication fallback and natural ChatGPT-style formatting.
+3. **Per-Account First-Login Onboarding**: Interactive multi-step setup modals for Students (career vision, specialization track, target milestones & AI roadmap) and Teachers (designation, semesters taught, research domains & office hours).
+4. **Authentic Personalized Academic Metrics**: Dynamically calculated CGPA trajectory curves, subject attendance ratios, and avatar initials tailored per individual student account.
+5. **Goal-Adaptive Course Recommendation Matrix**: Dynamic curriculum matching verified real university courses (Stanford, Harvard, MIT, Helsinki, Google, AWS) to each student's chosen technical specialization track.
 
 ---
-*Document maintained automatically. For changes or queries, update [`frontend/src/services/mentoringStore.ts`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/src/services/mentoringStore.ts) and [`frontend/src/App.tsx`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/src/App.tsx).*
+*Document maintained automatically. Updated for VITARA 2.0 release on GitHub.*
