@@ -1,18 +1,33 @@
 import mongoose from "mongoose";
+import dns from "dns";
 
 const connectDB = async () => {
   try {
-    const connectionInstance = await mongoose.connect(
-      `${process.env.MONGODB_URI || "mongodb://127.0.0.1:27017"}/${process.env.DB_NAME || "vitara_db"}`
-    );
+    // Set reliable public DNS servers to resolve MongoDB Atlas SRV records on Windows/ISPs
+    try {
+      dns.setServers(["8.8.8.8", "1.1.1.1", "8.8.4.4"]);
+    } catch (dnsErr) {
+      // Ignore if system restricts custom DNS servers
+    }
+
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      throw new Error("MONGODB_URI environment variable is not defined in .env");
+    }
+
+    const dbName = process.env.DB_NAME || "vitara";
+
+    const connectionInstance = await mongoose.connect(uri, {
+      dbName: dbName,
+    });
+
     console.log(
       `\n⚙️ MongoDB connected !! DB HOST: ${connectionInstance.connection.host}`
     );
     return connectionInstance;
   } catch (error) {
-    console.warn("⚠️ MONGODB Connection Warning: Local MongoDB is offline or MONGODB_URI is unconfigured.");
-    console.warn("   Backend server will run in standalone Mode with in-memory state fallback.");
-    return null;
+    console.error("MONGODB Connection Error: ", error.message || error);
+    process.exit(1);
   }
 };
 
