@@ -1,0 +1,49 @@
+====================================================================
+           5 SIMPLE STARTER ACCOUNTS (EMAIL, ROLL NO & PASSWORD)
+====================================================================
+
+You can log in with these simple credentials and fill in your custom
+profile details (projects, CGPA, courses, bio) directly in the UI.
+
+--------------------------------------------------------------------
+STUDENT ACCOUNTS
+--------------------------------------------------------------------
+
+[1] Student 1
+    Email:    student1@vit.edu.in
+    Roll No:  101
+    Password: pass1
+    Role:     STUDENT
+
+[2] Student 2
+    Email:    student2@vit.edu.in
+    Roll No:  102
+    Password: pass2
+    Role:     STUDENT
+
+[3] Student 3
+    Email:    student3@vit.edu.in
+    Roll No:  103
+    Password: pass3
+    Role:     STUDENT
+
+--------------------------------------------------------------------
+TEACHER / FACULTY MENTOR ACCOUNTS
+--------------------------------------------------------------------
+
+[4] Teacher 1
+    Email:    teacher1@vit.edu.in
+    Roll No:  T101
+    Password: pass4
+    Role:     MENTOR
+
+[5] Teacher 2
+    Email:    teacher2@vit.edu.in
+    Roll No:  T102
+    Password: pass5
+    Role:     MENTOR
+
+====================================================================
+Note: On the login page, you can enter either the Roll No or Email 
+along with the password to log in.
+====================================================================
