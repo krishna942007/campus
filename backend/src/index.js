@@ -12,24 +12,43 @@ dotenv.config({ path: path.resolve(__dirname, "../.env"), quiet: true });
 const { app } = await import("./app.js");
 const { default: connectDB } = await import("./db/index.js");
 
-connectDB()
-  .then(() => {
-    const PORT = process.env.PORT || 8000;
+// Cache DB connection state across warm serverless function invocations
+let isConnected = false;
+const ensureDBConnected = async () => {
+  if (!isConnected) {
+    await connectDB();
+    isConnected = true;
+  }
+};
 
-    app.on("error", (error) => {
-      console.log("Server error: " + error);
-      throw error;
-    });
+// Vercel Serverless Request Handler
+const handler = async (req, res) => {
+  await ensureDBConnected();
+  return app(req, res);
+};
 
-    const server = app.listen(PORT, () => {
-      console.log(`✅ Server is running on port: ${PORT}`);
-    });
+// Start standalone HTTP server if executed directly (e.g. local dev / non-Vercel environment)
+if (process.env.VERCEL !== "1") {
+  ensureDBConnected()
+    .then(() => {
+      const PORT = process.env.PORT || 5000;
 
-    server.on("close", () => {
-      console.log("The server is shutting down.");
+      app.on("error", (error) => {
+        console.log("Server error: " + error);
+        throw error;
+      });
+
+      const server = app.listen(PORT, () => {
+        console.log(`✅ Server is running on port: ${PORT}`);
+      });
+
+      server.on("close", () => {
+        console.log("The server is shutting down.");
+      });
+    })
+    .catch((error) => {
+      console.error("MONGO db connection failed !!! ", error);
     });
-  })
-  .catch((error) => {
-    console.error("MONGO db connection failed !!! ", error);
-    process.exit(1);
-  });
+}
+
+export default handler;

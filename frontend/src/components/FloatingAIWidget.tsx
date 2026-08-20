@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, X, Send, Bot, Move, Minimize2, Maximize2, Compass, BookOpen, GraduationCap, ChevronRight } from 'lucide-react';
+import { API_BASE_URL } from '../services/api';
 
 export const FloatingAIWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,7 +23,7 @@ export const FloatingAIWidget: React.FC = () => {
     (async () => {
       let responseText = '';
       try {
-        const res = await fetch('/api/v1/ai/chat', {
+        const res = await fetch(`${API_BASE_URL}/ai/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: textToSend, isGroundedInRAG: true })

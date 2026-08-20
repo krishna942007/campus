@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_BASE_URL } from '../services/api';
 import {
   Sparkles,
   Send,
@@ -207,7 +208,7 @@ export const ChatGPTAIWorkspace: React.FC<ChatGPTAIWorkspaceProps> = ({
       let thoughts = '';
 
       try {
-        const response = await fetch('/api/v1/ai/chat', {
+        const response = await fetch(`${API_BASE_URL}/ai/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
