@@ -11,9 +11,13 @@ export function useAuth() {
       const res: any = await api.post('/auth/login', credentials);
       return res.data;
     },
-    onSuccess: (data) => {
-      if (data?.user) {
-        setUser(data.user);
+    onSuccess: (data: any) => {
+      const user = data?.data?.user || data?.user;
+      if (user) {
+        setUser(user);
+        try {
+          localStorage.setItem('vit_current_user', JSON.stringify(user));
+        } catch (e) {}
       }
     },
   });

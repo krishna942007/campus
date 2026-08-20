@@ -23,31 +23,46 @@ export const FloatingAIWidget: React.FC = () => {
     (async () => {
       let responseText = '';
       try {
-        const res = await fetch(`${API_BASE_URL}/ai/chat`, {
+        const token = localStorage.getItem('accessToken');
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        let res = await fetch(`${API_BASE_URL}/ai/chat`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ prompt: textToSend, isGroundedInRAG: true })
-        });
-        if (res.ok) {
+        }).catch(() => null);
+
+        if (!res || !res.ok) {
+          res = await fetch('http://localhost:5000/api/v1/ai/chat', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ prompt: textToSend, isGroundedInRAG: true })
+          }).catch(() => null);
+        }
+
+        if (res && res.ok) {
           const data = await res.json();
           if (data.data && data.data.reply) {
             responseText = data.data.reply;
           }
         }
       } catch (err) {
-        console.warn('Floating AI Widget API fallback:', err);
+        console.warn('Floating AI Widget API error:', err);
       }
 
       if (!responseText) {
-        const q = textToSend.toLowerCase();
-        if (q.includes('attendance') || q.includes('rule') || q.includes('criteria')) {
+        const q = textToSend.toLowerCase().trim();
+        if (q === 'hi' || q === 'hello' || q === 'hey') {
+          responseText = `Hello! 👋 I am your VITARA AI Academic Copilot. How can I help you today? Feel free to ask about your courses, attendance requirements, syllabus, faculty mentors, or career roadmaps!`;
+        } else if (q.includes('attendance') || q.includes('rule') || q.includes('criteria')) {
           responseText = 'Under VIT Autonomous Ordinance 4.2, students must maintain a minimum of 75% attendance in every course. Students between 65%-74% require Dean approval for medical/extenuating reasons.';
         } else if (q.includes('mentor') || q.includes('faculty') || q.includes('kulkarni')) {
           responseText = 'Prof. S. Kulkarni (Associate Professor, AI & DS) has office hours Mon/Wed 3:00 PM – 5:00 PM in Room M-304. You can book an academic review in the Mentoring tab.';
         } else if (q.includes('cgpa') || q.includes('grade') || q.includes('honors')) {
           responseText = 'To be eligible for Honors in Applied Deep Learning, you must maintain a cumulative CGPA ≥ 7.50 without any active backlogs at the end of Semester IV.';
         } else {
-          responseText = `I analyzed your query against the official VIT Mumbai Academic Knowledge Base. For "${textToSend}", your coursework trajectory is aligned with Computer Engineering & AI goals.`;
+          responseText = `I'm here to assist with all your academic and career goals at VIT Mumbai. Ask me about subject attendance thresholds, lab assignments, or your personalized learning roadmap!`;
         }
       }
 
@@ -150,7 +165,7 @@ export const FloatingAIWidget: React.FC = () => {
                       ? 'bg-[#0C2238] text-white rounded-br-xs shadow-sm font-medium'
                       : 'bg-[#F7F4EE] text-[#10253A] border border-[#0C2238]/08 rounded-bl-xs leading-relaxed shadow-2xs'
                   }`}>
-                    <p>{m.text}</p>
+                    <div className="whitespace-pre-wrap leading-relaxed space-y-1.5">{m.text}</div>
                   </div>
                 </div>
               ))}

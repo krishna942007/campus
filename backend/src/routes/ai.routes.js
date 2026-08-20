@@ -7,17 +7,18 @@ import {
   handleSkillGapAnalysis,
   handleUploadKnowledgeDocument,
 } from "../controllers/ai.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyJWT, softVerifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.use(verifyJWT);
+// Public & student AI routes (with soft authentication for guest or logged in student context)
+router.route("/chat").post(softVerifyJWT, handleAIChat);
+router.route("/rag-search").post(softVerifyJWT, handleRAGSearch);
+router.route("/mentor-match").post(softVerifyJWT, handleMentorMatch);
+router.route("/skill-gap").post(softVerifyJWT, handleSkillGapAnalysis);
 
-router.route("/chat").post(handleAIChat);
-router.route("/rag-search").post(handleRAGSearch);
-router.route("/sessions").get(getChatSessions);
-router.route("/mentor-match").post(handleMentorMatch);
-router.route("/skill-gap").post(handleSkillGapAnalysis);
-router.route("/upload-knowledge").post(handleUploadKnowledgeDocument);
+// Authenticated session & admin management routes
+router.route("/sessions").get(verifyJWT, getChatSessions);
+router.route("/upload-knowledge").post(verifyJWT, handleUploadKnowledgeDocument);
 
 export default router;

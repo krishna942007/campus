@@ -30,21 +30,34 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
   }
 });
 
-// export const softVerifyJWT = asyncHandler(async (req, _, next) => {
-//   try {
-//     const token =
-//       req.cookies?.accessToken ||
-//       req.header("Authorization")?.replace("Bearer ", "");
+export const softVerifyJWT = asyncHandler(async (req, _, next) => {
+  try {
+    const token =
+      req.cookies?.accessToken ||
+      req.header("Authorization")?.replace("Bearer ", "");
 
-//     if (token) {
-//       const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-//       const user = await User.findById(decodedToken?._id).select(
-//         "-password -refreshToken"
-//       );
-//       if (user) req.user = user;
-//     }
-//     next();
-//   } catch (error) {
-//     next();
-//   }
-// });
+    if (token) {
+      const decodedToken = jwt.verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET || "access_secret_12345"
+      );
+      const user = await User.findById(decodedToken?._id).select(
+        "-password -refreshToken"
+      );
+      if (user) req.user = user;
+    }
+  } catch (error) {
+    // Ignore invalid tokens for soft auth
+  }
+
+  if (!req.user) {
+    req.user = {
+      _id: null,
+      name: "Student",
+      fullName: "Student",
+      role: "STUDENT",
+      department: "Computer Engineering",
+    };
+  }
+  next();
+});

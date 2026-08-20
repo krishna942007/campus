@@ -7,11 +7,17 @@
     "backend"
   ],
   "scripts": {
+    "dev": "concurrently -n \"backend,frontend\" -c \"cyan,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "npm --prefix frontend run dev",
     "build:frontend": "npm --prefix frontend run build",
     "dev:backend": "npm --prefix backend run dev",
     "build:backend": "npm --prefix backend run build",
     "build": "npm run build:frontend && npm run build:backend",
-    "start": "npm --prefix backend run start"
+    "start": "npm --prefix backend run start",
+    "test:ai": "node scratch/test_ai_rag_suite.js",
+    "seed:db": "node backend/src/db/seedData.js"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
   }
 }

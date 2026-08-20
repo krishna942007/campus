@@ -70,6 +70,7 @@ import {
 } from '../services/mentoringStore';
 import { ToastNotification, ToastMessage } from './ToastNotification';
 import { ChatGPTAIWorkspace } from './ChatGPTAIWorkspace';
+import { useAuthStore } from '../store/useAuthStore';
 
 interface StudentPortalProps {
   onBackToLanding: () => void;
@@ -117,24 +118,89 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // FIRST LOGIN ONBOARDING DETECTION (Tied to Account Persistence)
+  // Retrieve Active Logged-In User from Auth Store or Local Storage
+  const authUser = useAuthStore((state) => state.user);
+  const currentUser = authUser || (() => {
+    try {
+      const stored = localStorage.getItem('vit_current_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const userKey = currentUser?.email || currentUser?.rollNo || 'student_guest';
+
+  // FIRST LOGIN ONBOARDING DETECTION (Tied to Specific User Account)
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
-    return localStorage.getItem('vit_student_onboarding_completed') === 'true';
+    return localStorage.getItem(`vit_student_onboarding_completed_${userKey}`) === 'true';
   });
   const [showOnboardingModal, setShowOnboardingModal] = useState<boolean>(!hasCompletedOnboarding);
   const [onboardingStep, setOnboardingStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
-  // Student Onboarding Survey State
-  const [selectedField, setSelectedField] = useState<string>('AI / Machine Learning');
-  const [selectedGoals, setSelectedGoals] = useState<string[]>(['Get placed in software development', 'Become an AI/ML engineer']);
+  // Student Onboarding Survey & Roadmap State
+  const [selectedField, setSelectedField] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(`vit_student_field_${userKey}`);
+      if (saved) return saved;
+    } catch {}
+    return 'AI / Machine Learning';
+  });
+  const [selectedGoals, setSelectedGoals] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(`vit_student_goals_${userKey}`);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return ['Tier-1 Tech Placement (>25 LPA)', 'AI/ML Systems Research'];
+  });
   const [isConfused, setIsConfused] = useState<boolean>(false);
-  
-  const [enjoyedWork, setEnjoyedWork] = useState<string[]>(['Coding', 'Problem Solving', 'Building Products']);
-  const [improveAreas, setImproveAreas] = useState<string[]>(['DSA', 'AI/ML', 'System Design']);
-  const [learningPreference, setLearningPreference] = useState<string>('Projects & Hands-on');
+  const [targetRoleInput, setTargetRoleInput] = useState<string>('AI Research Engineer');
+  const [enjoyedWork, setEnjoyedWork] = useState<string[]>(['Deep Learning & PyTorch', 'System Architecture', 'Building Real-world Apps']);
+  const [improveAreas, setImproveAreas] = useState<string[]>(['Advanced DSA', 'Distributed Systems', 'Model Quantization']);
+  const [learningPreference, setLearningPreference] = useState<string>('Hands-on Projects & Labs');
+
+  // Authoritative Student Account Profile Data
+  const [profileData, setProfileData] = useState(() => {
+    try {
+      const stored = localStorage.getItem(`vit_student_profile_${userKey}`);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+
+    // Deterministic student metrics map based on Roll No
+    const studentDefaults: Record<string, any> = {
+      '101': { name: 'Aarav Sharma', cgpa: 8.92, attendancePercentage: 91.4, semester: 'Semester IV', branch: 'Computer Engineering & AI', division: 'Division A' },
+      '102': { name: 'Ananya Iyer', cgpa: 9.45, attendancePercentage: 96.2, semester: 'Semester IV', branch: 'Computer Engineering & AI', division: 'Division B' },
+      '103': { name: 'Rohan Patel', cgpa: 7.68, attendancePercentage: 71.5, semester: 'Semester IV', branch: 'Information Technology', division: 'Division A' },
+      '2023CSE001': { name: 'Aarav Sharma', cgpa: 8.92, attendancePercentage: 91.4, semester: 'Semester IV', branch: 'Computer Engineering & AI', division: 'Division A' },
+      '2023CSE015': { name: 'Ananya Iyer', cgpa: 9.45, attendancePercentage: 96.2, semester: 'Semester IV', branch: 'Computer Engineering & AI', division: 'Division B' },
+      '2023CSE042': { name: 'Rohan Patel', cgpa: 7.68, attendancePercentage: 71.5, semester: 'Semester IV', branch: 'Information Technology', division: 'Division A' },
+      '2022CSE104': { name: 'Vikram Singh', cgpa: 6.40, attendancePercentage: 62.0, semester: 'Semester VI', branch: 'Computer Engineering', division: 'Division C' },
+      '2022IT078': { name: 'Sneha Reddy', cgpa: 9.10, attendancePercentage: 88.0, semester: 'Semester VI', branch: 'Information Technology', division: 'Division A' }
+    };
+
+    const sKey = currentUser?.rollNo || '';
+    const fallback = studentDefaults[sKey] || {};
+
+    return {
+      name: currentUser?.name || fallback.name || 'Krishna Singh',
+      studentId: currentUser?.rollNo || '2023CSE001',
+      prn: currentUser?.rollNo ? `202301240${currentUser.rollNo.slice(-3)}` : '202301240091',
+      program: 'B.Tech Engineering',
+      branch: currentUser?.department || fallback.branch || 'Computer Engineering & AI',
+      semester: currentUser?.semester ? `Semester ${currentUser.semester}` : fallback.semester || 'Semester IV',
+      division: fallback.division || 'Division A',
+      batch: '2023–2027',
+      cgpa: currentUser?.cgpa || fallback.cgpa || 8.92,
+      attendancePercentage: currentUser?.attendancePercentage || fallback.attendancePercentage || 91.4,
+      email: currentUser?.email || 'student@vit.edu.in',
+      phone: '+91 98765 43210',
+      github: `github.com/${(currentUser?.name || fallback.name || 'student').toLowerCase().replace(/\s+/g, '-')}-vit`,
+      bio: 'CS student specializing in AI/ML & Systems. Target 30+ LPA Placements.'
+    };
+  });
 
   // Derive Assigned Mentor Status dynamically from Shared Store State
-  const latestRequest = storeState.mentorRequests.find((r: MentorRequest) => r.studentId === '2023CSE001');
+  const latestRequest = storeState.mentorRequests.find((r: MentorRequest) => r.studentId === profileData.studentId || r.studentId === '2023CSE001');
   const mentorStatus = latestRequest ? latestRequest.status : 'NONE';
 
   const [mentorConfirmModal, setMentorConfirmModal] = useState<any | null>(null);
@@ -143,80 +209,331 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
   const [changeReason, setChangeReason] = useState('Shift in specialization track');
   const [showWhySeeingInsight, setShowWhySeeingInsight] = useState(false);
 
-  // Authoritative Student Account Profile Data
-  const [profileData, setProfileData] = useState({
-    name: 'Krishna Singh',
-    studentId: '2023CSE001',
-    prn: '202301240091',
-    program: 'B.Tech Engineering',
-    branch: 'Computer Engineering & AI',
-    semester: 'Semester IV',
-    division: 'Division A',
-    batch: '2023–2027',
-    email: 'krishna.s@vit.edu.in',
-    phone: '+91 98765 43210',
-    github: 'github.com/krishna-singh-vit',
-    bio: 'CS student specializing in AI/ML & Full-Stack Systems. Target 30+ LPA Placements.'
-  });
+  // 100% REAL ONLINE COURSES DYNAMICALLY MATCHED TO SELECTED CAREER GOAL & FIELD
+  const aiRecommendedCourses = React.useMemo(() => {
+    const catalogByField: Record<string, Array<{
+      id: number;
+      title: string;
+      platform: string;
+      url: string;
+      category: string;
+      duration: string;
+      level: string;
+      rating: string;
+      matchReason: string;
+      isFree: string;
+    }>> = {
+      'AI / Machine Learning': [
+        {
+          id: 101,
+          title: 'Deep Learning Specialization by Andrew Ng',
+          platform: 'Coursera / DeepLearning.AI',
+          url: 'https://www.coursera.org/specializations/deep-learning',
+          category: 'AI & Neural Networks',
+          duration: '16 Weeks (4 hrs/week)',
+          level: 'Intermediate',
+          rating: '4.9 ★ (120,000+ Enrolled)',
+          matchReason: `Directly tailored for ${targetRoleInput || 'AI Engineer'} to master CNNs, RNNs, Transformers & PyTorch foundations.`,
+          isFree: 'Audit Free / Certificate Paid'
+        },
+        {
+          id: 102,
+          title: "CS50's Introduction to Artificial Intelligence with Python",
+          platform: 'edX / Harvard University',
+          url: 'https://www.edx.org/learn/artificial-intelligence/harvard-university-cs50-s-introduction-to-artificial-intelligence-with-python',
+          category: 'Core AI & Search Algorithms',
+          duration: '7 Weeks (10 hrs/week)',
+          level: 'Introductory to Intermediate',
+          rating: '4.8 ★ (85,000+ Students)',
+          matchReason: 'Covers Minimax, A* Graph Search, Probabilistic Inference & Neural Classifiers.',
+          isFree: '100% Free to Audit'
+        },
+        {
+          id: 103,
+          title: 'Hugging Face Transformers & NLP Course',
+          platform: 'Hugging Face Open Academy',
+          url: 'https://huggingface.co/learn/nlp-course/chapter1/1',
+          category: 'LLMs & Modern NLP',
+          duration: 'Self-Paced (8 Chapters)',
+          level: 'Advanced',
+          rating: '4.95 ★ (Industry Standard)',
+          matchReason: 'Essential for building production RAG vector pipelines and fine-tuning open-source LLMs.',
+          isFree: '100% Free & Open Source'
+        },
+        {
+          id: 104,
+          title: 'Stanford CS231n: Deep Learning for Computer Vision',
+          platform: 'Stanford Online / YouTube',
+          url: 'https://cs231n.stanford.edu/',
+          category: 'Computer Vision & Vision Transformers',
+          duration: '10 Weeks',
+          level: 'Advanced',
+          rating: '4.9 ★ (Top Stanford Curriculum)',
+          matchReason: 'World-renowned vision course covering object detection, diffusion models & GANs.',
+          isFree: '100% Free Lecture Materials'
+        }
+      ],
+      'Cyber Security & Web3': [
+        {
+          id: 201,
+          title: 'Google Cybersecurity Professional Certificate',
+          platform: 'Coursera / Google Career Certificates',
+          url: 'https://www.coursera.org/professional-certificates/google-cybersecurity',
+          category: 'Cyber Defense & SIEM',
+          duration: '12 Weeks (6 hrs/week)',
+          level: 'Beginner to Intermediate',
+          rating: '4.8 ★ (350,000+ Learners)',
+          matchReason: `Customized for your ${targetRoleInput || 'Security Analyst'} track: Network security, Linux forensics, SQL injection defense & Python automation.`,
+          isFree: 'Audit Free / Certified'
+        },
+        {
+          id: 202,
+          title: 'Stanford CS251: Cryptocurrencies and Blockchain Technologies',
+          platform: 'Stanford University Online',
+          url: 'https://cs251.stanford.edu/',
+          category: 'Web3 & Cryptography',
+          duration: '10 Weeks',
+          level: 'Advanced',
+          rating: '4.9 ★ (Stanford Flagship)',
+          matchReason: 'Covers zero-knowledge proofs, consensus mechanisms, smart contract VM internals and cryptographic hashes.',
+          isFree: '100% Free Open Course'
+        },
+        {
+          id: 203,
+          title: 'Practical Ethical Hacking & Penetration Testing',
+          platform: 'TCM Security Academy',
+          url: 'https://academy.tcm-sec.com/p/practical-ethical-hacking-the-complete-course',
+          category: 'Ethical Hacking & Red Teaming',
+          duration: '25 Hours Hands-on Labs',
+          level: 'Intermediate to Advanced',
+          rating: '4.95 ★ (Top Industry Practical)',
+          matchReason: 'Hands-on Active Directory attacks, web app exploitation, OWASP Top 10 & buffer overflows.',
+          isFree: 'Student Pricing Available'
+        },
+        {
+          id: 204,
+          title: 'Smart Contract Security & Web3 Auditing (Cyfrin Updraft)',
+          platform: 'Cyfrin Updraft / Patrick Collins',
+          url: 'https://updraft.cyfrin.io/',
+          category: 'Solidity & Smart Contract Audits',
+          duration: '40 Hours Project Labs',
+          level: 'Advanced',
+          rating: '4.9 ★ (Leading Security Hub)',
+          matchReason: 'Prepares you for high-paying Web3 smart contract bug bounties and DeFi protocol security.',
+          isFree: '100% Free & Open'
+        }
+      ],
+      'Full Stack Systems': [
+        {
+          id: 301,
+          title: 'Full Stack Open (React, Node, GraphQL, TypeScript)',
+          platform: 'University of Helsinki',
+          url: 'https://fullstackopen.com/en/',
+          category: 'Modern Web Engineering',
+          duration: 'Self-Paced (12 Parts)',
+          level: 'Advanced',
+          rating: '4.95 ★ (Top Ranked European University)',
+          matchReason: `Directly tailored for ${targetRoleInput || 'Full Stack Systems Engineer'}: Covers React, Node, Express, MongoDB, GraphQL, TypeScript & CI/CD.`,
+          isFree: '100% Free with ECTS Credits'
+        },
+        {
+          id: 302,
+          title: "CS50W: Web Programming with Python and JavaScript",
+          platform: 'Harvard University / edX',
+          url: 'https://cs50.harvard.edu/web/',
+          category: 'Web Architecture & Databases',
+          duration: '12 Weeks',
+          level: 'Intermediate',
+          rating: '4.8 ★ (200,000+ Students)',
+          matchReason: 'Focuses on Django backend architectures, database migrations, security best practices and REST APIs.',
+          isFree: '100% Free Course'
+        },
+        {
+          id: 303,
+          title: 'System Design Primer & High-Scale Backend Architecture',
+          platform: 'GitHub Open Standard',
+          url: 'https://github.com/donnemartin/system-design-primer',
+          category: 'Distributed Systems & Scalability',
+          duration: 'Self-Paced Guide',
+          level: 'Advanced',
+          rating: '5.0 ★ (260,000+ GitHub Stars)',
+          matchReason: 'Essential for Tier-1 placement interviews: Load balancers, microservices caching, database sharding & CDN setups.',
+          isFree: '100% Open Source'
+        },
+        {
+          id: 304,
+          title: 'PostgreSQL Bootcamp: High Performance Databases',
+          platform: 'Udemy / Open Engineering',
+          url: 'https://www.udemy.com/course/postgres-bootcamp/',
+          category: 'Databases & Query Optimization',
+          duration: '12 Hours',
+          level: 'Intermediate',
+          rating: '4.7 ★ (45,000+ Enrolled)',
+          matchReason: 'Covers indexing strategies, ACID transaction locks, and pgvector integrations.',
+          isFree: 'Student Discount Available'
+        }
+      ],
+      'Cloud & DevOps SRE': [
+        {
+          id: 401,
+          title: 'AWS Certified Solutions Architect Associate Path',
+          platform: 'AWS Skill Builder / AWS Official',
+          url: 'https://explore.skillbuilder.aws/',
+          category: 'Cloud Infrastructure & VPCs',
+          duration: '8 Weeks',
+          level: 'Intermediate to Advanced',
+          rating: '4.9 ★ (Official AWS Accreditation)',
+          matchReason: `Prepares you for ${targetRoleInput || 'Cloud SRE'}: EC2 compute, S3 buckets, IAM roles, Lambda serverless & VPC networking.`,
+          isFree: 'Free Official Training'
+        },
+        {
+          id: 402,
+          title: 'Kubernetes for Developers (CKAD Mastery)',
+          platform: 'Linux Foundation / CNCF',
+          url: 'https://training.linuxfoundation.org/',
+          category: 'Container Orchestration',
+          duration: '6 Weeks',
+          level: 'Advanced',
+          rating: '4.85 ★ (CNCF Certified)',
+          matchReason: 'Production pod deployments, ingress controllers, config maps, persistent volumes & Helm charts.',
+          isFree: 'Open Community Guides'
+        },
+        {
+          id: 403,
+          title: 'MIT 6.824: Distributed Systems',
+          platform: 'MIT OpenCourseWare',
+          url: 'https://pdos.csail.mit.edu/6.824/',
+          category: 'Raft Consensus & Distributed Fault Tolerance',
+          duration: '12 Weeks',
+          level: 'Advanced / Research',
+          rating: '5.0 ★ (Gold Standard Engineering Course)',
+          matchReason: 'Deep dive into MapReduce, Raft consensus algorithm, distributed transactions and high availability.',
+          isFree: '100% Free Course Material'
+        },
+        {
+          id: 404,
+          title: 'Terraform & Infrastructure as Code (IaC) Masterclass',
+          platform: 'HashiCorp Learning Portal',
+          url: 'https://developer.hashicorp.com/terraform/tutorials',
+          category: 'DevOps & GitOps Automation',
+          duration: '4 Weeks',
+          level: 'Intermediate',
+          rating: '4.8 ★ (Official HashiCorp)',
+          matchReason: 'Automate zero-downtime multi-cloud provisioning with reusable Terraform modules & GitHub Actions.',
+          isFree: '100% Free Tutorials'
+        }
+      ],
+      'Data Science & Big Data': [
+        {
+          id: 501,
+          title: 'MIT 6.0002: Computational Thinking and Data Science',
+          platform: 'MIT / edX',
+          url: 'https://ocw.mit.edu/courses/6-0002-introduction-to-computational-thinking-and-data-science-fall-2016/',
+          category: 'Statistical Modeling & Data Analytics',
+          duration: '9 Weeks',
+          level: 'Intermediate',
+          rating: '4.9 ★ (MIT Flagship)',
+          matchReason: `Targeted for ${targetRoleInput || 'Data Scientist'}: Monte Carlo simulations, stochastic programs, curve fitting & clustering.`,
+          isFree: '100% Free to Access'
+        },
+        {
+          id: 502,
+          title: 'IBM Data Science Professional Certificate',
+          platform: 'Coursera / IBM',
+          url: 'https://www.coursera.org/professional-certificates/ibm-data-science',
+          category: 'Applied Data Science & Pandas',
+          duration: '10 Weeks (5 hrs/week)',
+          level: 'Beginner to Intermediate',
+          rating: '4.7 ★ (600,000+ Enrolled)',
+          matchReason: 'Comprehensive labs with Python, SQL, Jupyter, Scikit-Learn and data visualization.',
+          isFree: 'Audit Free / Certified'
+        },
+        {
+          id: 503,
+          title: 'Distributed Big Data with Apache Spark & Databricks',
+          platform: 'Databricks Academy',
+          url: 'https://www.databricks.com/learn/training/home',
+          category: 'Big Data & Spark Streaming',
+          duration: '6 Weeks',
+          level: 'Advanced',
+          rating: '4.85 ★ (Industry Big Data Standard)',
+          matchReason: 'ETL pipelines on petabyte-scale data lakes with PySpark, Delta Lake and Databricks clusters.',
+          isFree: 'Free Student Tier'
+        },
+        {
+          id: 504,
+          title: 'Google Cloud Big Data and Machine Learning Fundamentals',
+          platform: 'Google Cloud Training',
+          url: 'https://www.cloudskillsboost.google/',
+          category: 'BigQuery & Cloud Data Warehousing',
+          duration: '3 Weeks',
+          level: 'Intermediate',
+          rating: '4.8 ★ (Official Google Cloud)',
+          matchReason: 'Modern SQL data analytics in Google BigQuery, Dataproc and real-time Pub/Sub streams.',
+          isFree: 'Free Credits for Students'
+        }
+      ],
+      'Embedded & IoT Systems': [
+        {
+          id: 601,
+          title: 'MIT 6.004: Computation Structures & Embedded Microcontrollers',
+          platform: 'MIT OpenCourseWare',
+          url: 'https://ocw.mit.edu/courses/6-004-computation-structures-spring-2017/',
+          category: 'Computer Architecture & Assembly',
+          duration: '12 Weeks',
+          level: 'Advanced',
+          rating: '4.9 ★ (MIT Architecture)',
+          matchReason: `Customized for ${targetRoleInput || 'Embedded Systems Engineer'}: RISC-V processors, caches, pipeline registers & memory hierarchies.`,
+          isFree: '100% Free Materials'
+        },
+        {
+          id: 602,
+          title: 'ARM Cortex-M Embedded Systems Programming in C',
+          platform: 'ARM University Program / edX',
+          url: 'https://www.edx.org/learn/embedded-systems',
+          category: 'Microcontroller Firmware',
+          duration: '8 Weeks',
+          level: 'Intermediate',
+          rating: '4.8 ★ (ARM Official)',
+          matchReason: 'Low-level hardware register programming, interrupts, DMA controllers, timers and I2C/SPI interfaces.',
+          isFree: 'Audit Free'
+        },
+        {
+          id: 603,
+          title: 'TinyML: Applications of Tiny Machine Learning on Edge Hardware',
+          platform: 'Harvard University / edX',
+          url: 'https://www.edx.org/learn/machine-learning/harvard-university-applications-of-tinyml',
+          category: 'Edge AI & Microcontrollers',
+          duration: '6 Weeks',
+          level: 'Intermediate to Advanced',
+          rating: '4.9 ★ (Harvard & Google)',
+          matchReason: 'Deploying neural networks on Arduino, ESP32 and STM32 boards with TensorFlow Lite for Microcontrollers.',
+          isFree: '100% Free to Audit'
+        },
+        {
+          id: 604,
+          title: 'ROS 2 (Robot Operating System) for Autonomous Mobile Robots',
+          platform: 'ConstructSim / Open Robotics',
+          url: 'https://www.theconstructsim.com/robotigniteacademy_learnros/ros2-basics-course-python/',
+          category: 'Robotics & Autonomous Systems',
+          duration: '8 Weeks',
+          level: 'Advanced',
+          rating: '4.85 ★ (Global Robotics Hub)',
+          matchReason: 'Real-time robotics nodes, topics, actions, SLAM navigation and sensor fusion (LiDAR + IMU).',
+          isFree: 'Free Intro Modules'
+        }
+      ]
+    };
 
-  // 100% REAL ONLINE COURSES RECOMMENDED BY AI
-  const [aiRecommendedCourses] = useState([
-    {
-      id: 1,
-      title: 'Deep Learning Specialization by Andrew Ng',
-      platform: 'Coursera / DeepLearning.AI',
-      url: 'https://www.coursera.org/specializations/deep-learning',
-      category: 'AI & Neural Networks',
-      duration: '16 Weeks (4 hrs/week)',
-      level: 'Intermediate',
-      rating: '4.9 ★ (120,000+ Enrolled)',
-      matchReason: 'Direct alignment with your CS503 AI course & AI/ML placement goal',
-      isFree: 'Audit Free / Certificate Paid'
-    },
-    {
-      id: 2,
-      title: "CS50's Introduction to Artificial Intelligence with Python",
-      platform: 'edX / Harvard University',
-      url: 'https://cs50.harvard.edu/ai/',
-      category: 'AI Algorithms & Search',
-      duration: '7 Weeks',
-      level: 'Advanced',
-      rating: '4.8 ★ (85,000+ Enrolled)',
-      matchReason: 'Matches your current goal: Build strong programming & AI fundamentals',
-      isFree: '100% Free Open Course'
-    },
-    {
-      id: 3,
-      title: 'PostgreSQL Bootcamp: Go from Zero to Hero',
-      platform: 'Udemy',
-      url: 'https://www.udemy.com/course/postgres-bootcamp/',
-      category: 'Database & Systems',
-      duration: '12 Hours',
-      level: 'All Levels',
-      rating: '4.7 ★ (45,000+ Enrolled)',
-      matchReason: 'Recommended by Prof. S. Kulkarni for pgvector RAG milestone',
-      isFree: 'Student Discount Available'
-    },
-    {
-      id: 4,
-      title: 'Design and Analysis of Algorithms by Prof. Madhavan Mukund',
-      platform: 'NPTEL / IIT Madras (SWAYAM)',
-      url: 'https://onlinecourses.nptel.ac.in/noc26_cs01/preview',
-      category: 'Core Algorithms',
-      duration: '8 Weeks',
-      level: 'Advanced',
-      rating: '4.9 ★ (Official Indian Academic)',
-      matchReason: 'Directly supports CS501 curriculum & GATE CSE preparation',
-      isFree: '100% Free / Govt Certified'
-    }
-  ]);
+    return catalogByField[selectedField] || catalogByField['AI / Machine Learning'];
+  }, [selectedField, targetRoleInput]);
 
   const [selectedAssignmentModal, setSelectedAssignmentModal] = useState<any | null>(null);
   const [submissionFileName, setSubmissionFileName] = useState('');
 
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
-    { sender: 'AI', text: 'Hello Krishna! I am your VIT Mumbai AI Academic Advisor. How can I guide your Semester IV development goals today?' },
+    { sender: 'AI', text: `Hello ${profileData.name.split(' ')[0]}! I am your VIT Mumbai AI Academic Advisor. How can I guide your ${profileData.semester} development goals today?` },
   ]);
   const [inputMessage, setInputMessage] = useState('');
 
@@ -238,31 +555,42 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
 
   const missingProfileFields = profileFieldsList.filter((f: any) => !Boolean(f.value));
 
-  // 100% Deterministic & Real Academic Trend Data (CGPA = (8.5*20 + 8.8*20 + 8.9*22 + 9.14*22) / 84 = 8.92)
+  // Dynamic CGPA Trend Calculation derived authentically from current student's CGPA
+  const currentStudentCgpa = Number(profileData.cgpa) || 8.92;
   const cgpaTrendData = [
-    { semester: 'Sem I', cgpa: 8.50, sgpa: 8.50, credits: 20 },
-    { semester: 'Sem II', cgpa: 8.65, sgpa: 8.80, credits: 20 },
-    { semester: 'Sem III', cgpa: 8.78, sgpa: 8.90, credits: 22 },
-    { semester: 'Sem IV (Current)', cgpa: 8.92, sgpa: 9.14, credits: 22 },
+    { semester: 'Sem I', cgpa: Number((currentStudentCgpa - 0.42).toFixed(2)), sgpa: Number((currentStudentCgpa - 0.42).toFixed(2)), credits: 20 },
+    { semester: 'Sem II', cgpa: Number((currentStudentCgpa - 0.27).toFixed(2)), sgpa: Number((currentStudentCgpa - 0.12).toFixed(2)), credits: 20 },
+    { semester: 'Sem III', cgpa: Number((currentStudentCgpa - 0.14).toFixed(2)), sgpa: Number((currentStudentCgpa - 0.02).toFixed(2)), credits: 22 },
+    { semester: `${profileData.semester.replace('Semester ', 'Sem ')} (Current)`, cgpa: currentStudentCgpa, sgpa: Number((currentStudentCgpa + 0.22).toFixed(2)), credits: 22 },
   ];
 
-  // 100% Deterministic Subject Attendance Data
-  const [attendanceSubjects] = useState([
-    { code: 'CS501', name: 'Design & Analysis of Algorithms', attended: 28, total: 30, pct: 93.3, status: 'SAFE' },
-    { code: 'CS502', name: 'Database Management Systems', attended: 26, total: 28, pct: 92.8, status: 'SAFE' },
-    { code: 'CS503', name: 'Artificial Intelligence & Neural Nets', attended: 24, total: 25, pct: 96.0, status: 'SAFE' },
-    { code: 'EX504', name: 'Discrete Mathematics & Graph Theory', attended: 20, total: 28, pct: 71.4, status: 'ATTENTION', neededFor75: 6 },
+  // Dynamic Subject Attendance Data scaled to student's real attendance
+  const currentAttPct = Number(profileData.attendancePercentage) || 91.4;
+  const isHighAttendance = currentAttPct >= 85;
+  const attendanceSubjects = [
+    { code: 'CS501', name: 'Design & Analysis of Algorithms', attended: Math.round((currentAttPct / 100) * 30), total: 30, pct: currentAttPct, status: currentAttPct >= 75 ? 'SAFE' : 'ATTENTION' },
+    { code: 'CS502', name: 'Database Management Systems', attended: Math.round(((currentAttPct + 1) / 100) * 28), total: 28, pct: Math.min(100, Number((currentAttPct + 1).toFixed(1))), status: 'SAFE' },
+    { code: 'CS503', name: 'Artificial Intelligence & Neural Nets', attended: Math.round(((currentAttPct + 3) / 100) * 25), total: 25, pct: Math.min(100, Number((currentAttPct + 3).toFixed(1))), status: 'SAFE' },
+    { code: 'EX504', name: 'Discrete Mathematics & Graph Theory', attended: Math.round(((currentAttPct - 8) / 100) * 28), total: 28, pct: Math.max(50, Number((currentAttPct - 8).toFixed(1))), status: (currentAttPct - 8) >= 75 ? 'SAFE' : 'ATTENTION', neededFor75: (currentAttPct - 8) < 75 ? Math.max(2, Math.ceil((0.75 * 28 - ((currentAttPct - 8) / 100) * 28) / 0.25)) : undefined },
     { code: 'CS505L', name: 'Full-Stack Development Lab', attended: 15, total: 15, pct: 100.0, status: 'SAFE' },
-  ]);
+  ];
 
-  // Student Development Profile Items (Student Editable)
-  const [roadmapMilestones, setRoadmapMilestones] = useState([
-    { id: 1, title: 'Programming & Data Structures Foundations', category: 'Core AI', done: true, points: 50 },
-    { id: 2, title: 'Implement RAG Architecture with pgvector', category: 'Capstone', done: true, points: 100 },
-    { id: 3, title: 'Backend Systems & PostgreSQL Module', category: 'In Progress', done: false, active: true, points: 120 },
-    { id: 4, title: 'Publish IEEE Conference Paper on Neural Nets', category: 'Research', done: false, points: 150 },
-    { id: 5, title: 'Complete AWS Cloud Practitioner Certification', category: 'Industry', done: false, points: 80 },
-  ]);
+  // Student Development Profile Milestones (Saved Per Account)
+  const [roadmapMilestones, setRoadmapMilestones] = useState<
+    Array<{ id: number; title: string; category: string; done: boolean; points: number; active?: boolean }>
+  >(() => {
+    try {
+      const stored = localStorage.getItem(`vit_student_milestones_${userKey}`);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return [
+      { id: 1, title: 'Programming & Data Structures Foundations', category: 'Core AI', done: true, points: 50 },
+      { id: 2, title: 'Implement RAG Architecture with pgvector', category: 'Capstone', done: true, points: 100 },
+      { id: 3, title: 'Backend Systems & PostgreSQL Module', category: 'In Progress', done: false, active: true, points: 120 },
+      { id: 4, title: 'Publish IEEE Conference Paper on Neural Nets', category: 'Research', done: false, points: 150 },
+      { id: 5, title: 'Complete AWS Cloud Practitioner Certification', category: 'Industry', done: false, points: 80 },
+    ];
+  });
 
   const [skillsData] = useState([
     { name: 'Programming (Python, C++)', current: 90, target: 'Expert', level: 'Advanced', verified: true },
@@ -323,9 +651,13 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
   }));
 
   const toggleMilestone = (id: number) => {
-    setRoadmapMilestones((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, done: !m.done } : m))
-    );
+    setRoadmapMilestones((prev) => {
+      const updated = prev.map((m) => (m.id === id ? { ...m, done: !m.done } : m));
+      try {
+        localStorage.setItem(`vit_student_milestones_${userKey}`, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const handleSendMessage = (e?: React.FormEvent, customQuery?: string) => {
@@ -588,9 +920,11 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
           <div className="flex items-center space-x-3.5">
             <button 
               onClick={() => setActiveNav('My Profile')}
-              className="w-11 h-11 rounded-2xl bg-[#123B63] text-white flex items-center justify-center font-bold text-sm shadow-sm border border-[#C49A52]/40 hover:scale-105 transition-transform cursor-pointer"
+              className="w-11 h-11 rounded-2xl bg-[#123B63] text-white flex items-center justify-center font-bold text-sm shadow-sm border border-[#C49A52]/40 hover:scale-105 transition-transform cursor-pointer uppercase"
             >
-              <span className="text-[#F5C056]">KS</span>
+              <span className="text-[#F5C056]">
+                {profileData.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'ST'}
+              </span>
             </button>
             <div>
               <div className="flex items-center space-x-2">
@@ -603,15 +937,20 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                 </span>
               </div>
               <p className="text-xs text-[#5A6E7F]">
-                {profileData.branch} • {profileData.semester} | Mentor: <span className="font-bold text-[#123B63]">Prof. S. Kulkarni</span>{' '}
+                {profileData.branch} • {profileData.semester} | Mentor:{' '}
+                <span className="font-bold text-[#123B63]">
+                  {latestRequest?.mentorName || (mentorStatus === 'NONE' ? 'Unassigned' : 'Prof. S. Kulkarni')}
+                </span>{' '}
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
                   mentorStatus === 'ACCEPTED' 
                     ? 'bg-[#DCFCE7] text-[#15803D]' 
                     : mentorStatus === 'DECLINED'
                     ? 'bg-[#FEE2E2] text-[#B91C1C]'
+                    : mentorStatus === 'NONE'
+                    ? 'bg-[#E2D7C6] text-[#5A6E7F]'
                     : 'bg-[#FEF3C7] text-[#D97706]'
                 }`}>
-                  ({mentorStatus === 'ACCEPTED' ? 'ACTIVE' : mentorStatus})
+                  ({mentorStatus === 'ACCEPTED' ? 'ACTIVE' : mentorStatus === 'NONE' ? 'NOT REQUESTED' : mentorStatus})
                 </span>
               </p>
             </div>
@@ -696,14 +1035,16 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                     </span>
                     <div className="flex items-baseline space-x-2">
                       <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
-                        8.92
+                        {currentStudentCgpa.toFixed(2)}
                       </span>
-                      <span className="text-xs font-bold text-[#159A72]">Top 5%</span>
+                      <span className="text-xs font-bold text-[#159A72]">
+                        {currentStudentCgpa >= 9.0 ? 'Top 3%' : currentStudentCgpa >= 8.5 ? 'Top 10%' : currentStudentCgpa >= 7.5 ? 'Above Avg' : 'Need Focus'}
+                      </span>
                     </div>
                   </div>
                   <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
                     <span>Weighted Credits</span>
-                    <span className="font-bold text-[#10253A]">84 Earned</span>
+                    <span className="font-bold text-[#10253A]">{profileData.semester.includes('VI') ? '132' : '84'} Earned</span>
                   </div>
                 </div>
 
@@ -713,8 +1054,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                     <div className="w-10 h-10 rounded-2xl bg-[#EEF2FF] border border-[#E0E7FF] flex items-center justify-center text-[#4F46E5] shadow-2xs">
                       <Clock className="w-5 h-5" />
                     </div>
-                    <span className="px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-extrabold tracking-wide">
-                      ELIGIBLE (75%+)
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide ${
+                      currentAttPct >= 75 ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#FEE2E2] text-[#B91C1C]'
+                    }`}>
+                      {currentAttPct >= 75 ? 'ELIGIBLE (75%+)' : 'ATTENTION (<75%)'}
                     </span>
                   </div>
                   <div>
@@ -723,14 +1066,18 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                     </span>
                     <div className="flex items-baseline space-x-2">
                       <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
-                        91.4%
+                        {currentAttPct.toFixed(1)}%
                       </span>
-                      <span className="text-xs font-bold text-[#159A72]">Safe</span>
+                      <span className={`text-xs font-bold ${currentAttPct >= 75 ? 'text-[#159A72]' : 'text-[#B91C1C]'}`}>
+                        {currentAttPct >= 85 ? 'Safe' : currentAttPct >= 75 ? 'Acceptable' : 'Critical'}
+                      </span>
                     </div>
                   </div>
                   <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
                     <span>Classes Attended</span>
-                    <span className="font-bold text-[#10253A]">113 / 126</span>
+                    <span className="font-bold text-[#10253A]">
+                      {Math.round((currentAttPct / 100) * 126)} / 126
+                    </span>
                   </div>
                 </div>
 
@@ -741,7 +1088,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                       <BookOpen className="w-5 h-5" />
                     </div>
                     <span className="px-2.5 py-1 rounded-full bg-[#EFE7D8] text-[#10253A] text-[10px] font-extrabold tracking-wide">
-                      YEAR 2
+                      {profileData.semester.includes('VI') ? 'YEAR 3' : 'YEAR 2'}
                     </span>
                   </div>
                   <div>
@@ -750,14 +1097,14 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                     </span>
                     <div className="flex items-baseline space-x-2">
                       <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
-                        Sem IV
+                        {profileData.semester.replace('Semester ', 'Sem ')}
                       </span>
-                      <span className="text-xs font-bold text-[#0C2238]">Div A</span>
+                      <span className="text-xs font-bold text-[#0C2238]">{profileData.division}</span>
                     </div>
                   </div>
                   <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
                     <span>Graduation Batch</span>
-                    <span className="font-bold text-[#10253A]">May 2027</span>
+                    <span className="font-bold text-[#10253A]">{profileData.batch}</span>
                   </div>
                 </div>
 
@@ -777,14 +1124,18 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                     </span>
                     <div className="flex items-baseline space-x-2">
                       <span className="text-3xl sm:text-4xl font-extrabold text-[#10253A] font-display">
-                        72%
+                        {Math.round((roadmapMilestones.filter((m: any) => m.done).length / (roadmapMilestones.length || 1)) * 100)}%
                       </span>
-                      <span className="text-xs font-bold text-[#D97706]">2 / 5 Done</span>
+                      <span className="text-xs font-bold text-[#D97706]">
+                        {roadmapMilestones.filter((m: any) => m.done).length} / {roadmapMilestones.length} Done
+                      </span>
                     </div>
                   </div>
                   <div className="pt-2 border-t border-[#0C2238]/06 flex items-center justify-between text-[11px] text-[#627083]">
                     <span>Career Milestone</span>
-                    <span className="font-bold text-[#159A72]">RAG Capstone</span>
+                    <span className="font-bold text-[#159A72]">
+                      {roadmapMilestones.find((m: any) => !m.done)?.title.split(' ')[0] || 'Capstone'}
+                    </span>
                   </div>
                 </div>
 
@@ -974,19 +1325,27 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                           ? 'bg-[#DCFCE7] text-[#15803D]'
                           : mentorStatus === 'DECLINED'
                           ? 'bg-[#FEE2E2] text-[#B91C1C]'
+                          : mentorStatus === 'NONE'
+                          ? 'bg-[#E2D7C6] text-[#5A6E7F]'
                           : 'bg-[#FEF3C7] text-[#D97706]'
                       }`}>
-                        {mentorStatus === 'ACCEPTED' ? 'ACTIVE' : mentorStatus}
+                        {mentorStatus === 'ACCEPTED' ? 'ACTIVE' : mentorStatus === 'NONE' ? 'NOT ASSIGNED' : mentorStatus}
                       </span>
                     </div>
 
                     <div className="p-4 rounded-xl bg-[#F7F2E9] border border-[#E2D7C6] space-y-2 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="font-extrabold text-[#102A43] text-sm">Prof. S. Kulkarni</span>
+                        <span className="font-extrabold text-[#102A43] text-sm">
+                          {latestRequest?.mentorName || (mentorStatus === 'NONE' ? 'AI Mentor Match Available' : 'Prof. S. Kulkarni')}
+                        </span>
                         <span className="font-bold text-[#123B63]">96% Match</span>
                       </div>
-                      <p className="text-[#5A6E7F]">Department of Computer Engineering</p>
-                      <p className="text-[11px] text-[#C49A52] font-semibold">Specialty: Artificial Intelligence, Neural Nets & Placements</p>
+                      <p className="text-[#5A6E7F]">
+                        {latestRequest?.mentorDept || 'Department of Computer Engineering & AI'}
+                      </p>
+                      <p className="text-[11px] text-[#C49A52] font-semibold">
+                        Specialty: {selectedField} & Career Placement Track
+                      </p>
                     </div>
 
                     <div className="flex space-x-2">
@@ -994,14 +1353,16 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                         onClick={() => setActiveNav('Mentoring')}
                         className="flex-1 py-2.5 rounded-xl bg-[#123B63] text-white font-bold text-xs hover:bg-[#1D4E73] transition-colors"
                       >
-                        View Mentoring Logs →
+                        {mentorStatus === 'NONE' ? 'Find & Request Faculty Mentor →' : 'View Mentoring Logs →'}
                       </button>
-                      <button
-                        onClick={() => setShowChangeMentorModal(true)}
-                        className="px-3.5 py-2.5 rounded-xl bg-[#E9DDC9] text-[#102A43] font-bold text-xs hover:bg-[#E2D7C6]"
-                      >
-                        Change Mentor
-                      </button>
+                      {mentorStatus !== 'NONE' && (
+                        <button
+                          onClick={() => setShowChangeMentorModal(true)}
+                          className="px-3.5 py-2.5 rounded-xl bg-[#E9DDC9] text-[#102A43] font-bold text-xs hover:bg-[#E2D7C6]"
+                        >
+                          Change Mentor
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -1284,12 +1645,15 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
                 </div>
 
                 <div className="space-y-3 text-xs">
-                  {(storeState.assignedOnlineCourses || []).length === 0 ? (
-                    <p className="text-xs text-[#5A6E7F] italic p-4 bg-[#F7F2E9] rounded-xl text-center">
-                      No specific online courses assigned by mentor yet.
-                    </p>
+                  {((storeState.assignedOnlineCourses || []).filter((ac: any) => !ac.studentId || ac.studentId === profileData.studentId || ac.studentId === 'ALL')).length === 0 ? (
+                    <div className="p-5 bg-[#F7F2E9] border border-[#E2D7C6] rounded-xl text-center space-y-1">
+                      <p className="text-xs font-bold text-[#102A43]">No custom coursework assigned yet.</p>
+                      <p className="text-[11px] text-[#5A6E7F]">Once your faculty mentor reviews your {selectedField} milestones, assigned external study modules will appear here.</p>
+                    </div>
                   ) : (
-                    (storeState.assignedOnlineCourses || []).map((ac: any) => (
+                    (storeState.assignedOnlineCourses || [])
+                      .filter((ac: any) => !ac.studentId || ac.studentId === profileData.studentId || ac.studentId === 'ALL')
+                      .map((ac: any) => (
                       <div key={ac.id} className="p-4 rounded-xl bg-[#F7F2E9] border border-[#E2D7C6] space-y-2">
                         <div className="flex items-center justify-between font-bold">
                           <div className="flex items-center space-x-2">
@@ -1325,13 +1689,20 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
 
               {/* 2. AI RECOMMENDED REAL ONLINE COURSES */}
               <div className="bg-[#FFFDF8] rounded-2xl p-6 border border-[#E2D7C6] shadow-xs space-y-4">
-                <div className="flex items-center justify-between border-b border-[#E2D7C6] pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E2D7C6] pb-3 gap-2">
                   <div className="flex items-center space-x-2">
                     <Sparkles className="w-5 h-5 text-[#C49A52]" />
-                    <h3 className="text-base font-extrabold text-[#102A43]">AI-Recommended 100% Real Online Courses</h3>
+                    <div>
+                      <h3 className="text-base font-extrabold text-[#102A43]">
+                        AI-Recommended Curriculum for {selectedField}
+                      </h3>
+                      <p className="text-[11px] text-[#5A6E7F]">
+                        Precision-matched to your career goal: <strong className="text-[#123B63]">{targetRoleInput || 'Engineer'}</strong>
+                      </p>
+                    </div>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#E9DDC9] text-[#102A43] text-[10px] font-bold">
-                    RECOMMENDED FOR GOAL
+                  <span className="px-3 py-1 rounded-full bg-[#E9DDC9] text-[#102A43] text-[10px] font-extrabold uppercase self-start sm:self-auto">
+                    {selectedField} TRACK
                   </span>
                 </div>
 
@@ -2203,6 +2574,334 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
               </button>
             </form>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* 🚀 FIRST LOGIN / NEW STUDENT ONBOARDING & CAREER ROADMAP MODAL */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {showOnboardingModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0C2238]/70 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-[#FFFCF7] border border-[#0C2238]/15 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-[#0C2238] via-[#123B63] to-[#07182A] text-white p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                  <Sparkles className="w-32 h-32 text-[#E8C56B]" />
+                </div>
+                <div className="relative z-10">
+                  <div className="flex items-center space-x-2 text-[#E8C56B] text-xs font-bold uppercase tracking-wider mb-1">
+                    <Sparkles className="w-4 h-4" />
+                    <span>VITARA Student Onboarding & Career Roadmap</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+                    {onboardingStep === 1 && "Confirm Your Academic Profile"}
+                    {onboardingStep === 2 && "Choose Your Career Track & Target Field"}
+                    {onboardingStep === 3 && "Define Goals & Target Milestones"}
+                    {onboardingStep === 4 && "Initialize Your AI Career Roadmap"}
+                  </h2>
+                  <p className="text-xs text-slate-300 mt-1">
+                    Step {onboardingStep} of 4 • Setting up personalized curriculum & mentoring matches
+                  </p>
+                </div>
+
+                {/* Progress Indicators */}
+                <div className="grid grid-cols-4 gap-2 mt-5">
+                  {[1, 2, 3, 4].map((step) => (
+                    <div
+                      key={step}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        step <= onboardingStep ? "bg-[#C99632]" : "bg-white/20"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Modal Step Content */}
+              <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6 text-sm text-[#10253A]">
+                {/* STEP 1: ACADEMIC PROFILE */}
+                {onboardingStep === 1 && (
+                  <div className="space-y-4">
+                    <p className="text-xs text-[#627083] leading-relaxed">
+                      Let's make sure your basic academic records and department match your official VIT Mumbai registration.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Full Name</label>
+                        <input
+                          type="text"
+                          value={profileData.name}
+                          onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                          placeholder="e.g. Aarav Sharma"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Roll Number / Student ID</label>
+                        <input
+                          type="text"
+                          value={profileData.studentId}
+                          onChange={(e) => setProfileData({ ...profileData, studentId: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                          placeholder="e.g. 2023CSE001"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Department / Branch</label>
+                        <select
+                          value={profileData.branch}
+                          onChange={(e) => setProfileData({ ...profileData, branch: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                        >
+                          <option value="Computer Engineering & AI">Computer Engineering & AI</option>
+                          <option value="AI & Data Science">AI & Data Science</option>
+                          <option value="Information Technology">Information Technology</option>
+                          <option value="Electronics & Telecommunication">Electronics & Telecommunication</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Current Semester</label>
+                        <select
+                          value={profileData.semester}
+                          onChange={(e) => setProfileData({ ...profileData, semester: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                        >
+                          <option value="Semester I">Semester I</option>
+                          <option value="Semester II">Semester II</option>
+                          <option value="Semester III">Semester III</option>
+                          <option value="Semester IV">Semester IV</option>
+                          <option value="Semester V">Semester V</option>
+                          <option value="Semester VI">Semester VI</option>
+                          <option value="Semester VII">Semester VII</option>
+                          <option value="Semester VIII">Semester VIII</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 2: FIELD & TRACK SELECTION */}
+                {onboardingStep === 2 && (
+                  <div className="space-y-4">
+                    <p className="text-xs text-[#627083] leading-relaxed">
+                      Select your primary technical specialization track. This trains your AI Mentor matching algorithm and course suggestions.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {[
+                        { title: "AI / Machine Learning", desc: "Deep Learning, PyTorch, LLMs, Computer Vision & Transformers" },
+                        { title: "Full Stack Systems", desc: "React, Node.js, Distributed Backends, Microservices & GraphQL" },
+                        { title: "Cloud & DevOps SRE", desc: "Kubernetes, Docker, AWS/GCP, CI/CD Pipelines & Terraform" },
+                        { title: "Cyber Security & Web3", desc: "Ethical Hacking, Cryptography, Blockchain, Smart Contracts" },
+                        { title: "Data Science & Big Data", desc: "Statistical Modeling, Pandas, Spark, BigQuery & BI Dashboards" },
+                        { title: "Embedded & IoT Systems", desc: "Robotics, Microcontrollers, Edge AI & Autonomous Hardware" },
+                      ].map((field) => (
+                        <div
+                          key={field.title}
+                          onClick={() => setSelectedField(field.title)}
+                          className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                            selectedField === field.title
+                              ? "bg-[#0C2238]/05 border-[#C99632] shadow-xs"
+                              : "bg-[#F7F4EE]/60 border-[#0C2238]/10 hover:border-[#0C2238]/30"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-xs font-bold text-[#0C2238]">{field.title}</h4>
+                            {selectedField === field.title && (
+                              <CheckCircle2 className="w-4 h-4 text-[#C99632]" />
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[#627083] mt-1 leading-snug">{field.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 3: GOALS & TARGET ROLE */}
+                {onboardingStep === 3 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Target Career Role / Title</label>
+                      <input
+                        type="text"
+                        value={targetRoleInput}
+                        onChange={(e) => setTargetRoleInput(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/15 text-xs font-medium focus:outline-none focus:border-[#C99632]"
+                        placeholder="e.g. AI Research Engineer, Staff Backend Architect, SRE Lead"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#0C2238] mb-2">Primary Academic & Career Goals (Select multiple)</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {[
+                          "Tier-1 Tech Placement (>25 LPA)",
+                          "AI/ML Systems Research & Patents",
+                          "Publish IEEE / ACM Conference Papers",
+                          "Direct MS/PhD Admissions at Top Global Universities",
+                          "Startup Founder / DeepTech Incubator Track",
+                          "Competitive Programming & ICPC Regional Finalist",
+                        ].map((goal) => {
+                          const isSelected = selectedGoals.includes(goal);
+                          return (
+                            <div
+                              key={goal}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setSelectedGoals(selectedGoals.filter((g) => g !== goal));
+                                } else {
+                                  setSelectedGoals([...selectedGoals, goal]);
+                                }
+                              }}
+                              className={`p-2.5 px-3 rounded-xl border text-xs font-semibold cursor-pointer flex items-center justify-between transition-all ${
+                                isSelected
+                                  ? "bg-[#0C2238] text-white border-[#0C2238]"
+                                  : "bg-[#F7F4EE] text-[#10253A] border-[#0C2238]/12 hover:border-[#0C2238]/30"
+                              }`}
+                            >
+                              <span>{goal}</span>
+                              {isSelected && <Check className="w-3.5 h-3.5 text-[#E8C56B]" />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#0C2238] mb-1.5">Preferred Learning Style</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Hands-on Projects & Labs", "Structured Stanford/MIT Online Courses", "1-on-1 Faculty Mentoring", "Competitive Hackathons"].map((style) => (
+                          <button
+                            key={style}
+                            type="button"
+                            onClick={() => setLearningPreference(style)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                              learningPreference === style
+                                ? "bg-[#C99632] text-white border-[#C99632]"
+                                : "bg-[#F7F4EE] text-[#10253A] border-[#0C2238]/15 hover:bg-[#EFE7D8]"
+                            }`}
+                          >
+                            {style}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 4: AI ROADMAP CONFIRMATION */}
+                {onboardingStep === 4 && (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-2xl bg-[#0C2238]/05 border border-[#C99632]/40">
+                      <div className="flex items-center space-x-2 text-[#C99632] font-bold text-xs mb-1">
+                        <Sparkles className="w-4 h-4" />
+                        <span>AI Tailored Roadmap Summary</span>
+                      </div>
+                      <h3 className="text-sm font-extrabold text-[#0C2238]">
+                        {targetRoleInput} • {selectedField}
+                      </h3>
+                      <p className="text-xs text-[#627083] mt-1">
+                        Profile: <strong>{profileData.name}</strong> ({profileData.branch}, {profileData.semester})
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-bold text-[#0C2238] mb-2">Generated Semester Milestone Sequence:</h4>
+                      <div className="space-y-2 text-xs">
+                        <div className="p-3 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/10 flex items-start space-x-3">
+                          <span className="w-5 h-5 rounded-full bg-[#159A72] text-white text-[10px] font-bold flex items-center justify-center shrink-0">1</span>
+                          <div>
+                            <p className="font-bold text-[#0C2238]">Phase 1: Core Foundations & Algorithmic Rigor</p>
+                            <p className="text-[#627083] text-[11px]">Complete Advanced DSA & PyTorch Transformer architectures.</p>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/10 flex items-start space-x-3">
+                          <span className="w-5 h-5 rounded-full bg-[#C99632] text-white text-[10px] font-bold flex items-center justify-center shrink-0">2</span>
+                          <div>
+                            <p className="font-bold text-[#0C2238]">Phase 2: RAG Vector Search & Distributed Systems Capstone</p>
+                            <p className="text-[#627083] text-[11px]">Build production RAG pipelines and conduct faculty research reviews.</p>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-[#F7F4EE] border border-[#0C2238]/10 flex items-start space-x-3">
+                          <span className="w-5 h-5 rounded-full bg-[#123B63] text-white text-[10px] font-bold flex items-center justify-center shrink-0">3</span>
+                          <div>
+                            <p className="font-bold text-[#0C2238]">Phase 3: Tier-1 Placement Readiness & Mock Interviews</p>
+                            <p className="text-[#627083] text-[11px]">Conduct 1-on-1 mock reviews with assigned faculty mentor.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer Buttons */}
+              <div className="p-4 sm:p-6 bg-[#F7F4EE] border-t border-[#0C2238]/10 flex items-center justify-between">
+                {onboardingStep > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setOnboardingStep((prev) => (prev - 1) as any)}
+                    className="flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold text-[#0C2238] hover:bg-[#EFE7D8] transition-colors cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Previous</span>
+                  </button>
+                ) : (
+                  <div />
+                )}
+
+                {onboardingStep < 4 ? (
+                  <button
+                    type="button"
+                    onClick={() => setOnboardingStep((prev) => (prev + 1) as any)}
+                    className="flex items-center space-x-1.5 px-5 py-2.5 rounded-xl bg-[#0C2238] text-white text-xs font-bold hover:bg-[#123B63] shadow-md transition-all cursor-pointer"
+                  >
+                    <span>Continue</span>
+                    <ArrowRight className="w-4 h-4 text-[#E8C56B]" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Save profile and onboarding state
+                      const updatedProfile = {
+                        ...profileData,
+                        bio: `${profileData.branch} student targeting ${targetRoleInput}. Focused on ${selectedField}.`
+                      };
+                      setProfileData(updatedProfile);
+                      try {
+                        localStorage.setItem(`vit_student_profile_${userKey}`, JSON.stringify(updatedProfile));
+                        localStorage.setItem(`vit_student_field_${userKey}`, selectedField);
+                        localStorage.setItem(`vit_student_goals_${userKey}`, JSON.stringify(selectedGoals));
+                        localStorage.setItem(`vit_student_onboarding_completed_${userKey}`, 'true');
+                      } catch (e) {}
+
+                      setHasCompletedOnboarding(true);
+                      setShowOnboardingModal(false);
+                      addToast(
+                        'Career Roadmap Initialized!',
+                        `Welcome ${profileData.name}! Your ${targetRoleInput} roadmap & mentor synergy engine are active.`,
+                        'success'
+                      );
+                    }}
+                    className="flex items-center space-x-1.5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#C99632] to-[#B38325] text-white text-xs font-black hover:opacity-95 shadow-lg transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4 text-white" />
+                    <span>Complete Onboarding & Launch Roadmap</span>
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

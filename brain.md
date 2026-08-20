@@ -34,7 +34,7 @@ VITARA unifies:
 | **Charts & Analytics** | [Recharts 2.15.0](https://recharts.org/) (ResponsiveContainer, LineChart, BarChart, etc.) |
 
 ### 🎨 Institutional Design System (VIT Mumbai Aesthetic)
-All styles conform strictly to the bespoke VIT Mumbai brand palette defined in [`tailwind.config.js`](file:///c:/Users/HP/Desktop/project1/tailwind.config.js) and [`src/index.css`](file:///c:/Users/HP/Desktop/project1/src/index.css):
+All styles conform strictly to the bespoke VIT Mumbai brand palette defined in [`frontend/tailwind.config.js`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/tailwind.config.js) and [`frontend/src/index.css`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/src/index.css):
 
 * **Canvas Background**: Warm Cream `#F7F4EE` & `#FAF7F0`
 * **Card Surface**: Pure Ivory `#FFFCF7` & `#FFFFFF`
@@ -48,7 +48,7 @@ All styles conform strictly to the bespoke VIT Mumbai brand palette defined in [
 
 ## 🧭 3. Application Routing & Architecture Flow
 
-The entire routing engine is managed in [`frontend/src/App.tsx`](file:///c:/Users/HP/Desktop/project1/frontend/src/App.tsx) through HTML5 History API integration (`pushState`, `popstate`), ensuring bookmarkable URLs, browser back/forward button support, and instant zero-page-reload rendering.
+The entire routing engine is managed in [`frontend/src/App.tsx`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/src/App.tsx) through HTML5 History API integration (`pushState`, `popstate`), ensuring bookmarkable URLs, browser back/forward button support, and instant zero-page-reload rendering.
 
 ```
                                   ┌──────────────────┐
@@ -272,4 +272,14 @@ The project is fully build-ready and pre-configured for one-click deployment acr
 * **Environment Templates**: [`backend/.env.example`](file:///c:/Users/HP/Desktop/project1/backend/.env.example) & [`frontend/.env.example`](file:///c:/Users/HP/Desktop/project1/frontend/.env.example).
 
 ---
-*Document maintained automatically. For changes or queries, update [`frontend/src/services/mentoringStore.ts`](file:///c:/Users/HP/Desktop/project1/frontend/src/services/mentoringStore.ts) and [`frontend/src/App.tsx`](file:///c:/Users/HP/Desktop/project1/frontend/src/App.tsx).*
+
+## 🔮 10. Recent Architectural Milestones Completed
+
+1. **MongoDB Atlas & Database Seeding**: Connected live MongoDB Atlas with complete seeded collections for Students, Faculty Mentors, Assignments, Courses, and Schedules. Added 5 simple accounts (`101`, `102`, `103`, `T101`, `T102`).
+2. **Gemini 2.5 Flash RAG Engine**: Live integration in [`backend/src/services/aiService.js`](file:///c:/Users/HP/Desktop/project1/backend/src/services/aiService.js) with soft authentication fallback and natural ChatGPT-style formatting.
+3. **Per-Account First-Login Onboarding**: Interactive multi-step setup modals for Students (career vision, specialization track, target milestones & AI roadmap) and Teachers (designation, semesters taught, research domains & office hours).
+4. **Authentic Personalized Academic Metrics**: Dynamically calculated CGPA trajectory curves, subject attendance ratios, and avatar initials tailored per individual student account.
+5. **Goal-Adaptive Course Recommendation Matrix**: Dynamic curriculum matching verified real university courses (Stanford, Harvard, MIT, Helsinki, Google, AWS) to each student's chosen technical specialization track.
+
+---
+*Document maintained automatically. Updated for VITARA 2.0 release on GitHub.*
