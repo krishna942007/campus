@@ -18,6 +18,15 @@
     "test:ai": "node scratch/test_ai_rag_suite.js",
     "seed:db": "node backend/src/db/seedData.js"
   },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.3"
+  },
   "devDependencies": {
     "concurrently": "^10.0.5"
   }
