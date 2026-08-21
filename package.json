@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "concurrently -n \"backend,frontend\" -c \"cyan,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "npm --prefix frontend run dev",
-    "build:frontend": "npm --prefix frontend run build",
+    "build:frontend": "npm --prefix frontend run build && node scripts/sync-build.js",
     "dev:backend": "npm --prefix backend run dev",
     "build:backend": "npm --prefix backend run build",
     "build": "npm run build:frontend && npm run build:backend",
