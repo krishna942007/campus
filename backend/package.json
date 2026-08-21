@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/index.js",
     "build": "tsc",
+    "build:backend": "tsc",
     "start": "node src/index.js"
   },
   "dependencies": {
