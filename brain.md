@@ -265,11 +265,12 @@ The project is fully build-ready and pre-configured for one-click deployment acr
 * **TypeScript Integrity**: Fully typed with zero compilation warnings (`tsc` passes for both frontend and backend).
 
 ### ☁️ Cloud Deployment Configuration Setup
-* **Netlify / Render / Cloudflare Pages**: [`frontend/public/_redirects`](file:///c:/Users/HP/Desktop/project1/frontend/public/_redirects) configured for HTML5 `pushState` SPA fallback routing (`/* /index.html 200`).
-* **Vercel Frontend**: [`frontend/vercel.json`](file:///c:/Users/HP/Desktop/project1/frontend/vercel.json) rewrites enabled.
-* **Vercel Backend**: [`backend/vercel.json`](file:///c:/Users/HP/Desktop/project1/backend/vercel.json) serverless function builder configured.
-* **Render.com Monorepo**: [`render.yaml`](file:///c:/Users/HP/Desktop/project1/render.yaml) provided for 1-click stack provisioning (Web Service + Static Site).
-* **Environment Templates**: [`backend/.env.example`](file:///c:/Users/HP/Desktop/project1/backend/.env.example) & [`frontend/.env.example`](file:///c:/Users/HP/Desktop/project1/frontend/.env.example).
+* **Unified Monorepo (Vercel)**: [`vercel.json`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/vercel.json) + [`api/index.js`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/api/index.js) (single-click fullstack deployment: serves Vite SPA on `/` and Express Serverless API on `/api/*` from the same domain with 0 CORS friction).
+* **Netlify / Render / Cloudflare Pages**: [`frontend/public/_redirects`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/public/_redirects) configured for HTML5 `pushState` SPA fallback routing (`/* /index.html 200`).
+* **Standalone Vercel Frontend**: [`frontend/vercel.json`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/vercel.json) rewrites enabled.
+* **Standalone Vercel Backend**: [`backend/vercel.json`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/backend/vercel.json) serverless function builder configured.
+* **Render.com Monorepo**: [`render.yaml`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/render.yaml) provided for 1-click stack provisioning (Web Service + Static Site).
+* **Environment Templates**: [`.env.example`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.env.example), [`backend/.env.example`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/backend/.env.example) & [`frontend/.env.example`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/.env.example).
 
 ---
 
