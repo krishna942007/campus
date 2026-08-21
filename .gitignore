@@ -32,3 +32,5 @@ public/*.png
 scratch/
 *.docx
 srs_full_text.txt
+ACCOUNTS_AND_PASSWORDS.txt
+SIMPLE_ACCOUNTS.txt

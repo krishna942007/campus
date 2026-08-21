@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:frontend": "vite build",
+    "build": "vite build && node ../scripts/sync-build.js",
+    "build:frontend": "vite build && node ../scripts/sync-build.js",
     "preview": "vite preview"
   },
   "dependencies": {
