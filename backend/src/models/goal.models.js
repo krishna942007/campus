@@ -1,5 +1,19 @@
 import mongoose, { Schema } from "mongoose";
 
+const taskSchema = new Schema({
+  text: {
+    type: String,
+    required: true,
+  },
+  isCompleted: {
+    type: Boolean,
+    default: false,
+  },
+  completedAt: {
+    type: Date,
+  }
+});
+
 const milestoneSchema = new Schema({
   title: {
     type: String,
@@ -26,6 +40,10 @@ const milestoneSchema = new Schema({
   },
   remainingTasks: {
     type: [String],
+    default: [],
+  },
+  tasks: {
+    type: [taskSchema],
     default: [],
   },
 });

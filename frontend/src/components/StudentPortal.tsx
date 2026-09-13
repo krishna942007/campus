@@ -72,6 +72,7 @@ import { ToastNotification, ToastMessage } from './ToastNotification';
 import { ChatGPTAIWorkspace } from './ChatGPTAIWorkspace';
 import { WeeklyActivitySection } from './WeeklyActivitySection';
 import { GoalProgressSection } from './GoalProgressSection';
+import { GoalsAndRoadmapPage } from './GoalsAndRoadmapPage';
 import { useAuthStore } from '../store/useAuthStore';
 
 interface StudentPortalProps {
@@ -1922,50 +1923,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
 
           {/* VIEW 9: GOALS & ROADMAP */}
           {activeNav === 'Goals & Roadmap' && (
-            <div className="space-y-6">
-              <div className="bg-[#FFFDF8] rounded-2xl p-6 border border-[#E2D7C6] shadow-xs flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-extrabold text-[#102A43]">AI Development Roadmap & Career Milestones</h2>
-                  <p className="text-xs text-[#5A6E7F]">Target Goal: {selectedGoals.join(', ')}</p>
-                </div>
-                <span className="px-3 py-1 rounded-full bg-[#FEF3C7] text-xs font-bold text-[#D97706]">
-                  72% ROADMAP COMPLETED
-                </span>
-              </div>
-
-              <div className="bg-[#FFFDF8] rounded-2xl p-6 border border-[#E2D7C6] shadow-xs space-y-4">
-                <h3 className="text-base font-extrabold text-[#102A43]">Semester IV Milestone Checklist</h3>
-                <div className="space-y-3">
-                  {roadmapMilestones.map((m) => (
-                    <div 
-                      key={m.id}
-                      className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${
-                        m.done ? 'bg-[#F7F2E9] border-[#E2D7C6]' : 'bg-[#FFFDF8] border-[#123B63]'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <button
-                          onClick={() => toggleMilestone(m.id)}
-                          className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors cursor-pointer ${
-                            m.done ? 'bg-[#123B63] border-[#123B63] text-white' : 'border-[#1D4E73]'
-                          }`}
-                        >
-                          {m.done && <Check className="w-4 h-4 stroke-[3]" />}
-                        </button>
-                        <div>
-                          <p className={`text-sm font-bold ${m.done ? 'line-through text-[#5A6E7F]' : 'text-[#102A43]'}`}>
-                            {m.title}
-                          </p>
-                          <span className="text-xs font-semibold text-[#C49A52] uppercase">{m.category}</span>
-                        </div>
-                      </div>
-
-                      <span className="text-xs font-extrabold text-[#123B63]">+{m.points} XP</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <GoalsAndRoadmapPage />
           )}
 
           {/* VIEW 11: MY PROFILE */}

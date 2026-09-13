@@ -394,9 +394,10 @@ Student Context: ${contextStr || "None provided"}`;
         percentage: 0,
         status: dbStatus,
         completedActivities: [],
-        remainingTasks: Array.isArray(m.remainingTasks) 
-          ? m.remainingTasks.map(t => String(t).substring(0, 200)) 
-          : ["Begin initial study and preparation"]
+        remainingTasks: [],
+        tasks: Array.isArray(m.remainingTasks) 
+          ? m.remainingTasks.map(t => ({ text: String(t).substring(0, 200), isCompleted: false })) 
+          : [{ text: "Begin initial study and preparation", isCompleted: false }]
       };
     });
 

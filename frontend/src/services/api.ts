@@ -56,5 +56,17 @@ export const studentGoalsApi = {
 
   setPrimaryGoal: (goalId: string) => 
     api.patch(`/student/goals/${goalId}/primary`),
+
+  toggleTask: (goalId: string, milestoneId: string, taskId: string) =>
+    api.patch(`/student/goals/${goalId}/milestones/${milestoneId}/tasks/${taskId}/toggle`),
+
+  regenerateRoadmap: (goalId: string) =>
+    api.post(`/student/goals/${goalId}/roadmap/regenerate`),
+
+  updateGoal: (goalId: string, data: { title?: string; description?: string; status?: string }) =>
+    api.patch(`/student/goals/${goalId}`, data),
+
+  deleteGoal: (goalId: string) =>
+    api.delete(`/student/goals/${goalId}`),
 };
 

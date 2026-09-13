@@ -9,10 +9,32 @@ import { generateGoalRoadmap } from "../services/aiService.js";
 export const getStudentGoals = asyncHandler(async (req, res) => {
   const studentId = req.user._id;
 
-  const goals = await Goal.find({ student: studentId }).sort({
+  const goals = await Goal.find({ student: studentId, status: { $ne: "ARCHIVED" } }).sort({
     isPrimary: -1,
     createdAt: -1,
   });
+
+  // Lazy migration for legacy tasks
+  for (const goal of goals) {
+    if (!goal.roadmap || goal.roadmap.length === 0) continue;
+    
+    let goalMigrated = false;
+    goal.roadmap.forEach(m => {
+      if ((!m.tasks || m.tasks.length === 0) && (m.remainingTasks?.length > 0 || m.completedActivities?.length > 0)) {
+        m.tasks = [
+          ...(m.completedActivities || []).map(text => ({ text, isCompleted: true })),
+          ...(m.remainingTasks || []).map(text => ({ text, isCompleted: false }))
+        ];
+        m.remainingTasks = [];
+        m.completedActivities = [];
+        goalMigrated = true;
+      }
+    });
+
+    if (goalMigrated) {
+      await goal.save();
+    }
+  }
 
   return res
     .status(200)
@@ -215,4 +237,124 @@ export const deleteStudentGoal = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, null, "Goal archived successfully"));
+});
+
+// Helper for recalculating goal progress
+const recalculateGoalProgress = (goal) => {
+  let totalTasks = 0;
+  let completedTasks = 0;
+  let completedMilestones = 0;
+
+  goal.roadmap.forEach((milestone) => {
+    let mTotal = milestone.tasks ? milestone.tasks.length : 0;
+    let mCompleted = milestone.tasks ? milestone.tasks.filter((t) => t.isCompleted).length : 0;
+
+    totalTasks += mTotal;
+    completedTasks += mCompleted;
+
+    if (mTotal > 0) {
+      milestone.percentage = Math.round((mCompleted / mTotal) * 100);
+      if (mCompleted === 0) {
+        milestone.status = "NOT_STARTED";
+      } else if (mCompleted === mTotal) {
+        milestone.status = "COMPLETED";
+        completedMilestones++;
+      } else {
+        milestone.status = "IN_PROGRESS";
+      }
+    } else {
+      milestone.percentage = 0;
+      milestone.status = "NOT_STARTED";
+    }
+  });
+
+  if (totalTasks > 0) {
+    goal.progress = Math.round((completedTasks / totalTasks) * 100);
+  } else {
+    goal.progress = 0;
+  }
+};
+
+// PATCH /api/v1/student/goals/:goalId/milestones/:milestoneId/tasks/:taskId/toggle
+export const toggleTaskCompletion = asyncHandler(async (req, res) => {
+  const studentId = req.user._id;
+  const { goalId, milestoneId, taskId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(goalId) || !mongoose.Types.ObjectId.isValid(milestoneId) || !mongoose.Types.ObjectId.isValid(taskId)) {
+    throw new ApiError(400, "Invalid ID format");
+  }
+
+  const goal = await Goal.findOne({ _id: goalId, student: studentId });
+
+  if (!goal) {
+    throw new ApiError(404, "Goal not found");
+  }
+
+  const milestone = goal.roadmap.id(milestoneId);
+  if (!milestone) {
+    throw new ApiError(404, "Milestone not found");
+  }
+
+  const task = milestone.tasks.id(taskId);
+  if (!task) {
+    throw new ApiError(404, "Task not found");
+  }
+
+  task.isCompleted = !task.isCompleted;
+  task.completedAt = task.isCompleted ? new Date() : null;
+
+  recalculateGoalProgress(goal);
+
+  await goal.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, goal, "Task toggled successfully"));
+});
+
+// POST /api/v1/student/goals/:goalId/roadmap/regenerate
+export const regenerateRoadmap = asyncHandler(async (req, res) => {
+  const studentId = req.user._id;
+  const { goalId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(goalId)) {
+    throw new ApiError(400, "Invalid goal ID format");
+  }
+
+  const goal = await Goal.findOne({ _id: goalId, student: studentId });
+
+  if (!goal) {
+    throw new ApiError(404, "Goal not found");
+  }
+
+  goal.roadmapGenerationStatus = "pending";
+  await goal.save();
+
+  try {
+    const studentContext = {
+      name: req.user.fullName || req.user.name || "Student",
+      role: req.user.role || "STUDENT",
+      department: req.user.department || "Computer Engineering",
+    };
+
+    const generatedRoadmap = await generateGoalRoadmap({
+      title: goal.title,
+      description: goal.description,
+      studentContext
+    });
+
+    goal.roadmap = generatedRoadmap;
+    goal.roadmapGenerationStatus = "completed";
+    recalculateGoalProgress(goal);
+    await goal.save();
+  } catch (err) {
+    console.error("Failed to regenerate roadmap:", err);
+    goal.roadmapGenerationStatus = "failed";
+    await goal.save();
+    throw new ApiError(500, "Failed to regenerate AI roadmap");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, goal, "Roadmap regenerated successfully"));
 });
