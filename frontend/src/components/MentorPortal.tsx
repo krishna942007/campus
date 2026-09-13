@@ -54,6 +54,7 @@ import {
 } from '../services/mentoringStore';
 import { ToastNotification, ToastMessage } from './ToastNotification';
 import { ChatGPTAIWorkspace } from './ChatGPTAIWorkspace';
+import { EventManagement } from './EventManagement';
 import { useAuthStore } from '../store/useAuthStore';
 
 interface MentorPortalProps {
@@ -63,6 +64,7 @@ interface MentorPortalProps {
 export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) => {
   const [activeNav, setActiveNav] = useState<
     | 'Overview'
+    | 'Events Hub'
     | 'Mentor Requests'
     | 'My Students'
     | 'Assignments'
@@ -704,6 +706,7 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) =
             <nav className="p-3 space-y-1 text-xs font-semibold">
               {[
                 { name: 'Overview', icon: LayoutDashboard },
+                { name: 'Events Hub', icon: Sparkles, badge: 'AI' },
                 { name: 'Mentor Requests', icon: UserCheck, badge: pendingRequestsCount > 0 ? `${pendingRequestsCount}` : undefined },
                 { name: 'My Students', icon: Users, badge: `${allMentees.length}` },
                 { name: 'Assignments', icon: CheckSquare, badge: `${storeState.assignments.length}` },
@@ -782,6 +785,11 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) =
         {/* MAIN BODY WRAPPER */}
         <main className="p-6 max-w-7xl mx-auto space-y-6 w-full flex-1">
           
+          {/* VIEW: EVENTS HUB */}
+          {activeNav === 'Events Hub' && (
+            <EventManagement />
+          )}
+
           {/* VIEW 1: OVERVIEW */}
           {activeNav === 'Overview' && (
             <div className="space-y-6">
