@@ -326,6 +326,32 @@ The project is fully build-ready and pre-configured for one-click deployment acr
     - Removed automatic DOMContentLoaded book opening; books now strictly remain closed in the 3D gallery view until explicitly clicked by the user.
     - Removed overlay controls from the 3D book gateway view (Direct Access pill bar, redundant top back button, and floating AI widget on /login) for a clean, distraction-free visual experience.
 23. **Master Presentation Deck (`ppt.md`) Generation**: Generated a comprehensive 20-slide presentation deck covering every feature, portal, function, architecture diagram, design specification, and presenter speaking script for Campus 1 / VIT Mumbai platform.
+24. **Institutional Events & AI Event Recommendation Engine**: Fully implemented end-to-end event management and AI recommendation workflow:
+    - **Backend Model & Storage**: Mongoose `Event` schema (`event.models.js`) storing event types (Workshop, Hackathon, Seminar, etc.), schedule, capacity, registration links, and rich `aiMetadata` (extracted skills, target domains, key topics, target audience level).
+    - **Gemini AI Event Understanding**: Integrated `analyzeEventMetadata` in `aiService.js` to automatically extract normalized technical skills and concepts via Google Gemini with graceful fallback handling.
+    - **Goal-Adaptive Recommendation Engine**: Multi-factor scoring in `event.controller.js` evaluating active student Goals, roadmap milestones, and specific roadmap tasks against event AI metadata to generate dynamic `relevanceScore` (0-98%) and specific `matchReason` explanations (e.g., "Matches your interest in PyTorch & Computer Vision from your AI Research Engineer roadmap").
+    - **Mentor Event Management Portal**: Interactive faculty management suite (`EventManagement.tsx`) with modal creation/editing, live AI skill extraction feedback, search filters, and delete capabilities.
+    - **Student Event Explorer & Dashboard Widget**: Dedicated student explorer (`StudentEventsPage.tsx`) with high-match filters, direct registration links, and dashboard top-match carousel (`RecommendedEventsSection.tsx`).
+
+
+25. **Campus 1 Student Dashboard Goal Progress UI Restoration**:
+    - Restored the earlier, rich multi-goal dashboard presentation in [`frontend/src/components/GoalProgressSection.tsx`](file:///c:/Users/HP/Desktop/project1/frontend/src/components/GoalProgressSection.tsx).
+    - **Real Dynamic Data Source**: Directly binds to MongoDB Atlas through `studentGoalsApi.getGoals()`, `studentGoalsApi.toggleTask()`, `studentGoalsApi.setPrimaryGoal()`, and `studentGoalsApi.createGoal()`.
+    - **Rich Visual Elements Restored**:
+      - Dynamic Goal selector chips/tabs displaying real goals from MongoDB with automatic domain icons and `PRIMARY` badges.
+      - Compact circular Overall Goal Progress gauge showing backend-calculated percentage and primary status.
+      - Sequential vertical milestone timeline with connecting progress lines, step indicators, completion badges (`✓ Done`, `Active`), and percentage bars.
+      - 2-Column Activity Connection panel: Completed Activities (`task.isCompleted === true`) vs Remaining Tasks (`task.isCompleted === false`) with interactive checkbox toggles that persist immediately to MongoDB.
+      - Dashboard "+ Add Goal" modal to create new career goals and trigger AI roadmaps without navigating away.
+
+26. **AI Student Profile Intelligence & Ranking System**:
+    - **Architectural Separation**: Separated contextual AI evidence analysis (Google Gemini) from deterministic backend ranking calculation.
+    - **Mongoose Model (`StudentProfileIntelligence`)**: Stores `overallScore`, `profileStrength` tier, `categoryScores` (Technical, Academic, Projects, Competitive, Engagement, Career Readiness), `strengths`, `improvementAreas`, `careerReadiness`, `evidence`, `confidence`, `profileCompleteness`, `profileDataHash`, `status`, and historical audit snapshots.
+    - **Evidence Aggregator (`profileIntelligenceService.js`)**: Aggregates authentic evidence from `User` (skills, projects, competitions, certifications, CGPA), `Goal` (primary target role, roadmap milestones & tasks), `Attendance`, `Submission`, and `OnlineCourse`. Computes SHA-256 evidence hash for staleness detection.
+    - **Contextual Gemini AI Evaluation**: Prompts Google Gemini with sanitized structured evidence to evaluate depth, difficulty, and relevance to target career roles, returning strict validated JSON.
+    - **Deterministic Ranking Service (`rankingService.js`)**: Computes overall and category ranks, percentiles, and top percentage tiers (`Top 1%`, `Top 5%`, `Top 10%`, `Top 25%`) with deterministic secondary tie-breaking. Queries stored MongoDB scores with index-optimized projections, executing with 0 LLM latency.
+    - **Frontend Experience (`StudentProfileIntelligencePage.tsx`, `ProfileIntelligenceSummaryWidget.tsx`)**: Full dashboard widget and full-page intelligence suite featuring score rings, multi-category progress meters, strengths/gaps breakdowns, "Why Your Rank Changed" explanations, interactive multi-category Leaderboards (Overall, Technical, Readiness, Projects, Academic) with search/filtering/pagination, and a Profile Evidence Editor.
 
 ---
 *Document maintained automatically. Updated for Campus 1 release on GitHub.*
+

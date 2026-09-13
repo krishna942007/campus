@@ -114,8 +114,8 @@ export function applyBackgroundPresentation(
 
   // The original renderer may have measured a split hero or section-sized
   // canvas. Re-run its authored resize path after the layer becomes full-frame.
-  frame.contentWindow?.requestAnimationFrame(() => {
-    frame.contentWindow?.dispatchEvent(new Event("resize"));
+  frame?.contentWindow?.requestAnimationFrame(() => {
+    frame?.contentWindow?.dispatchEvent(new Event("resize"));
   });
 }
 

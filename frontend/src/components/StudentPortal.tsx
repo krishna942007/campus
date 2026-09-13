@@ -48,7 +48,8 @@ import {
   AlertCircle,
   Lock,
   FileCode,
-  Info
+  Info,
+  Trophy
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -73,6 +74,10 @@ import { ChatGPTAIWorkspace } from './ChatGPTAIWorkspace';
 import { WeeklyActivitySection } from './WeeklyActivitySection';
 import { GoalProgressSection } from './GoalProgressSection';
 import { GoalsAndRoadmapPage } from './GoalsAndRoadmapPage';
+import { StudentEventsPage } from './StudentEventsPage';
+import { RecommendedEventsSection } from './RecommendedEventsSection';
+import { ProfileIntelligenceSummaryWidget } from './ProfileIntelligenceSummaryWidget';
+import { StudentProfileIntelligencePage } from './StudentProfileIntelligencePage';
 import { useAuthStore } from '../store/useAuthStore';
 
 interface StudentPortalProps {
@@ -82,6 +87,8 @@ interface StudentPortalProps {
 export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding }) => {
   const [activeNav, setActiveNav] = useState<
     | 'Overview'
+    | 'AI Profile Intelligence & Ranking'
+    | 'Campus Events'
     | 'Academics'
     | 'Attendance'
     | 'Assignments & Coursework'
@@ -883,6 +890,8 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
           <nav className="p-3 space-y-1 text-xs font-semibold">
             {[
               { name: 'Overview', icon: LayoutDashboard },
+              { name: 'AI Profile Intelligence & Ranking', icon: Trophy, badge: 'AI Rank' },
+              { name: 'Campus Events', icon: Calendar, badge: 'AI Matched' },
               { name: 'Academics', icon: GraduationCap },
               { name: 'Attendance', icon: Clock },
               { name: 'Assignments & Coursework', icon: CheckSquare, badge: '1 Active' },
@@ -1350,9 +1359,17 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
 
               </div>
 
-              {/* RIGHT COLUMN (50%): Goal Progress + My Direction + Development Profile + Subject Attendance Breakdown */}
+              {/* RIGHT COLUMN (50%): AI Profile Intelligence + Goal Progress + AI Recommended Events + My Direction */}
               <div className="space-y-6">
                 
+                {/* AI PROFILE INTELLIGENCE SUMMARY WIDGET */}
+                <ProfileIntelligenceSummaryWidget
+                  onOpenFullIntelligence={() => setActiveNav('AI Profile Intelligence & Ranking')}
+                />
+
+                {/* AI RECOMMENDED EVENTS WIDGET */}
+                <RecommendedEventsSection onViewAllEvents={() => setActiveNav('Campus Events')} />
+
                 {/* GOAL PROGRESS ENGINE */}
                 <GoalProgressSection />
 
@@ -1921,9 +1938,19 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
             </div>
           )}
 
+          {/* VIEW: AI PROFILE INTELLIGENCE & RANKING */}
+          {activeNav === 'AI Profile Intelligence & Ranking' && (
+            <StudentProfileIntelligencePage onNavigateToRoadmap={() => setActiveNav('Goals & Roadmap')} />
+          )}
+
           {/* VIEW 9: GOALS & ROADMAP */}
           {activeNav === 'Goals & Roadmap' && (
             <GoalsAndRoadmapPage />
+          )}
+
+          {/* VIEW: CAMPUS EVENTS & AI RECOMMENDATIONS */}
+          {activeNav === 'Campus Events' && (
+            <StudentEventsPage onNavigateToRoadmap={() => setActiveNav('Goals & Roadmap')} />
           )}
 
           {/* VIEW 11: MY PROFILE */}

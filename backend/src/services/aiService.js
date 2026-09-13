@@ -61,7 +61,7 @@ const INSTITUTIONAL_KNOWLEDGE_DOCS = [
 /**
  * Call Google Gemini API with strict token limits & timeout
  */
-async function callGeminiAPI(systemPrompt, userPrompt, modelName = "models/gemini-2.5-flash") {
+export async function callGeminiAPI(systemPrompt, userPrompt, modelName = "models/gemini-2.5-flash") {
   const url = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${GEMINI_KEY}`;
   
   // Truncate user prompt to max 3000 chars to avoid token consumption spikes
@@ -406,6 +406,69 @@ Student Context: ${contextStr || "None provided"}`;
   } catch (err) {
     console.error("AI Goal Roadmap Generation Failed:", err.message);
     throw err; // Let controller handle the failure
+  }
+}
+
+/**
+ * AI Event Metadata Analyzer & Skill Extractor
+ */
+export async function analyzeEventMetadata({ title, description, eventType }) {
+  const systemPrompt = `You are the Campus 1 AI Event Understanding Engine.
+Analyze the given educational/institutional event (workshop, hackathon, seminar, etc.) and extract structured metadata, skills, concepts, and domains to facilitate personalized recommendation to students.
+
+Return ONLY a valid JSON object matching this schema:
+{
+  "targetDomains": ["e.g. Artificial Intelligence", "Full Stack Web", "Cloud Computing"],
+  "extractedSkills": ["e.g. Python", "PyTorch", "React", "Docker", "Algorithms"],
+  "keyTopics": ["e.g. Computer Vision", "Transformers", "API Design", "Distributed Systems"],
+  "targetAudienceLevel": "ALL",
+  "summary": "1-2 sentence concise summary of what students will learn or experience."
+}
+
+"targetAudienceLevel" MUST be one of: "ALL", "BEGINNER", "INTERMEDIATE", "ADVANCED".
+Ensure "targetDomains", "extractedSkills", and "keyTopics" are arrays of clean, normalized strings (e.g. "React", "Python").
+Do NOT include markdown codeblocks (\`\`\`json). Return ONLY the raw JSON.`;
+
+  const prompt = `Event Title: ${title}
+Event Type: ${eventType || "WORKSHOP"}
+Event Description: ${description || "No description provided"}`;
+
+  try {
+    const rawReply = await callGeminiAPI(systemPrompt, prompt);
+    const jsonMatch = rawReply.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("No JSON object found in response");
+    }
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    return {
+      targetDomains: Array.isArray(parsed.targetDomains) ? parsed.targetDomains.map(d => String(d).trim()) : [],
+      extractedSkills: Array.isArray(parsed.extractedSkills) ? parsed.extractedSkills.map(s => String(s).trim()) : [],
+      keyTopics: Array.isArray(parsed.keyTopics) ? parsed.keyTopics.map(t => String(t).trim()) : [],
+      targetAudienceLevel: ["ALL", "BEGINNER", "INTERMEDIATE", "ADVANCED"].includes(parsed.targetAudienceLevel)
+        ? parsed.targetAudienceLevel
+        : "ALL",
+      summary: String(parsed.summary || "").trim(),
+      processedAt: new Date(),
+      status: "PROCESSED",
+    };
+  } catch (err) {
+    console.warn("AI Event Metadata Extraction encountered error, applying fallback:", err.message);
+    const combinedText = `${title} ${description}`.toLowerCase();
+    const commonSkills = ["python", "javascript", "react", "node", "docker", "ai", "machine learning", "deep learning", "pytorch", "tensorflow", "cloud", "aws", "mongodb", "sql", "java", "c++", "cybersecurity", "blockchain", "devops", "flutter", "data science", "nlp", "llm"];
+    const foundSkills = commonSkills
+      .filter(skill => combinedText.includes(skill))
+      .map(skill => skill.toUpperCase() === "AI" || skill.toUpperCase() === "NLP" || skill.toUpperCase() === "LLM" || skill.toUpperCase() === "SQL" || skill.toUpperCase() === "AWS" ? skill.toUpperCase() : skill.charAt(0).toUpperCase() + skill.slice(1));
+
+    return {
+      targetDomains: [eventType ? `${eventType.charAt(0) + eventType.slice(1).toLowerCase()} Program` : "Technical"],
+      extractedSkills: foundSkills.length > 0 ? foundSkills : ["Problem Solving", "Software Engineering"],
+      keyTopics: [title],
+      targetAudienceLevel: "ALL",
+      summary: description ? description.slice(0, 160) + (description.length > 160 ? "..." : "") : title,
+      processedAt: new Date(),
+      status: "PROCESSED",
+    };
   }
 }
 

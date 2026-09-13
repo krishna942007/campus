@@ -7,6 +7,8 @@ import mentorRouter from "./routes/mentor.routes.js";
 import studentRouter from "./routes/student.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import aiRouter from "./routes/ai.routes.js";
+import eventRouter from "./routes/event.routes.js";
+import profileIntelligenceRouter from "./routes/profileIntelligence.routes.js";
 
 const app = express();
 
@@ -26,8 +28,10 @@ app.use(cookieParser());
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/mentor", mentorRouter);
 app.use("/api/v1/student", studentRouter);
+app.use("/api/v1/students", profileIntelligenceRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/ai", aiRouter);
+app.use("/api/v1/events", eventRouter);
 
 // Health check endpoint
 app.get("/api/v1/health", (_req, res) => {

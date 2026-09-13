@@ -70,6 +70,61 @@ const userSchema = new Schema(
       ref: "User",
       default: null,
     },
+    // Student Profile Evidence for AI Intelligence
+    skills: [
+      {
+        name: { type: String, trim: true },
+        proficiency: { type: String, enum: ["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"], default: "INTERMEDIATE" },
+        category: { type: String, default: "Technical" },
+      },
+    ],
+    projects: [
+      {
+        title: { type: String, trim: true },
+        description: { type: String, trim: true },
+        techStack: { type: [String], default: [] },
+        link: { type: String, default: "" },
+        grade: { type: String, default: "A+" },
+        status: { type: String, default: "COMPLETED" },
+      },
+    ],
+    competitions: [
+      {
+        title: { type: String, trim: true },
+        type: { type: String, default: "Hackathon" },
+        position: { type: String, default: "Participant" }, // e.g. "1st Place / Winner", "Top 5 Finalist"
+        date: { type: String, default: "" },
+        description: { type: String, default: "" },
+      },
+    ],
+    certifications: [
+      {
+        title: { type: String, trim: true },
+        issuer: { type: String, default: "Online / Academy" },
+        date: { type: String, default: "" },
+        url: { type: String, default: "" },
+        status: { type: String, default: "VERIFIED" },
+      },
+    ],
+    achievements: [
+      {
+        title: { type: String, trim: true },
+        category: { type: String, default: "Academic" },
+        description: { type: String, default: "" },
+      },
+    ],
+    github: {
+      type: String,
+      default: "",
+    },
+    linkedin: {
+      type: String,
+      default: "",
+    },
+    bio: {
+      type: String,
+      default: "",
+    },
     // Mentor specific attributes
     designation: {
       type: String,
