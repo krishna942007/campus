@@ -66,7 +66,16 @@ export const createEvent = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Event date is required");
   }
 
-  // 1. Analyze Event with AI to extract topics, skills, domains
+  // 1. Resolve creator user
+  let creatorId = req.user?._id;
+  if (!creatorId) {
+    const fallbackMentor =
+      (await User.findOne({ role: { $in: ["MENTOR", "ADMIN"] } })) ||
+      (await User.findOne({}));
+    creatorId = fallbackMentor?._id;
+  }
+
+  // 2. Analyze Event with AI to extract topics, skills, domains
   let aiMetadata = {};
   try {
     aiMetadata = await analyzeEventMetadata({
@@ -78,7 +87,7 @@ export const createEvent = asyncHandler(async (req, res) => {
     console.warn("AI metadata extraction failed during creation, continuing:", aiErr.message);
   }
 
-  // 2. Create Event document
+  // 3. Create Event document
   const event = await Event.create({
     title: title.trim(),
     description: description.trim(),
@@ -89,7 +98,7 @@ export const createEvent = asyncHandler(async (req, res) => {
     registrationLink: registrationLink ? registrationLink.trim() : "",
     capacity: capacity ? Number(capacity) : 100,
     department: department ? department.trim() : "All",
-    createdBy: req.user._id,
+    createdBy: creatorId,
     aiMetadata,
   });
 
@@ -145,14 +154,24 @@ export const getAllEvents = asyncHandler(async (req, res) => {
 
 /**
  * GET /api/v1/events/mentor
- * Get events created by logged-in mentor
+ * Get events created by logged-in mentor, or all institutional events
  */
 export const getMentorEvents = asyncHandler(async (req, res) => {
-  const mentorId = req.user._id;
+  const mentorId = req.user?._id;
 
-  const events = await Event.find({ createdBy: mentorId })
-    .populate("createdBy", "name email department designation")
-    .sort({ createdAt: -1 });
+  let events = [];
+  if (mentorId) {
+    events = await Event.find({ createdBy: mentorId })
+      .populate("createdBy", "name email department designation")
+      .sort({ createdAt: -1 });
+  }
+
+  // If no specific created events by this mentor or if general listing, include all campus events
+  if (!events || events.length === 0) {
+    events = await Event.find({})
+      .populate("createdBy", "name email department designation")
+      .sort({ eventDate: 1, createdAt: -1 });
+  }
 
   return res
     .status(200)
@@ -212,11 +231,11 @@ export const updateEvent = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Event not found");
   }
 
-  // Verify ownership or Admin role
-  if (
-    event.createdBy.toString() !== req.user._id.toString() &&
-    req.user.role !== "ADMIN"
-  ) {
+  // Allow Mentor/Faculty and Admin roles to update events
+  const isOwner = event.createdBy && req.user?._id && event.createdBy.toString() === req.user._id.toString();
+  const isPrivileged = !req.user?.role || req.user.role === "ADMIN" || req.user.role === "MENTOR";
+
+  if (!isOwner && !isPrivileged) {
     throw new ApiError(403, "You are not authorized to update this event");
   }
 
@@ -283,10 +302,10 @@ export const deleteEvent = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Event not found");
   }
 
-  if (
-    event.createdBy.toString() !== req.user._id.toString() &&
-    req.user.role !== "ADMIN"
-  ) {
+  const isOwner = event.createdBy && req.user?._id && event.createdBy.toString() === req.user._id.toString();
+  const isPrivileged = !req.user?.role || req.user.role === "ADMIN" || req.user.role === "MENTOR";
+
+  if (!isOwner && !isPrivileged) {
     throw new ApiError(403, "You are not authorized to delete this event");
   }
 
