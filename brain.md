@@ -45,11 +45,25 @@ All styles conform strictly to the bespoke VIT Mumbai brand palette defined in [
 * **Typography**: Primary `Plus Jakarta Sans` / `Inter`, Display `Outfit`, Accent Serif `DM Serif Display`
 * **Surfaces**: Ultra-transparent glass surfaces `.glass-panel`, `.glass-card` (`bg-[#FFFFFF]/10 backdrop-blur-[5px] border-[#0C2238]/08 shadow-xl shadow-[#0C2238]/05`).
 
-### 💎 Glassmorphism Design System & Skill
-All UI cards and interactive panels follow the **Glassmorphism Design System Skill** stored in [`.agents/skills/glassmorphism/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/glassmorphism/SKILL.md).
-* **Core Philosophy**: Transparency first, blurred second, decorative last (`transparent → subtle 5px blur → clean 8% border → soft depth shadow → crisp typography`).
-* **Production Spec**: `bg-[#FFFFFF]/10 backdrop-blur-[5px] border border-[#0C2238]/08 shadow-xl shadow-[#0C2238]/05`.
-* **Rules**: Ultra-transparent 10% white fill, 5px backdrop blur, subtle 8% navy rim borders (`border-[#0C2238]/08`), and soft depth shadows.
+### 💎 Design Architecture, Taste Manifesto & Skills Suite
+The frontend strictly conforms to the design foundations codified in:
+* **[DESIGN.md](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/DESIGN.md)**: Master systematic design engineering blueprint (4pt/8pt spatial grid, typography scales, contrast ratios, and responsive breakpoints).
+* **[TASTE.md](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/TASTE.md)**: Design taste & craftsmanship manifesto (anti-generic AI slop, information density, organic spring motion, and optical precision).
+
+All UI components leverage curated design system skills stored in [`.agents/skills/`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/):
+* **Taste & Craft Skill** ([`taste-and-craft/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/taste-and-craft/SKILL.md)): High design taste, anti-slop rules, lighting & depth calibration.
+* **Design Engineering Skill** ([`design-engineering/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/design-engineering/SKILL.md)): 4pt/8pt spatial grids, WCAG AA compliance, and complete 6-state component machines.
+* **Minimalist UI Skill** ([`minimalist-ui/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/minimalist-ui/SKILL.md)): Linear, Vercel, Apple & Geist aesthetic with generous whitespace, 1px micro-borders (`border-black/[0.08]`), Vercel-style sliding indicator tabs, and copy snippets.
+* **Micro-Animations Skill** ([`micro-animations/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/micro-animations/SKILL.md)): Precision micro-interactions, cascading staggered lists (`staggerChildren: 0.06`), scroll-driven progress line, live status pulse badges, and tactile spring switches.
+* **shadcn/ui Skill** ([`shadcn-ui/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/shadcn-ui/SKILL.md)): Industry standard (~120k+ stars) copy-paste accessible component architecture, Radix UI primitives, `cva` variants, and compound dialog/form structures.
+* **Aceternity UI Skill** ([`aceternity-ui/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/aceternity-ui/SKILL.md)): High-impact viral visual effects (~15k+ stars) including 3D Pin Cards, Lamp hero spotlight, Sparkles canvas stars, Background Beams, and Hero Parallax.
+* **Magic UI Skill** ([`magic-ui/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/magic-ui/SKILL.md)): High-impact animated components (~15k+ stars) including Marquee tickers, Border Beam perimeter lasers, Animated Beams, Meteors, and Animated Number Tickers.
+* **Origin UI Skill** ([`origin-ui/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/origin-ui/SKILL.md)): High-polish accessible form controls (~6k+ stars) including floating inputs, password meters, segmented switches, range sliders, and `⌘K` search bars.
+* **Motion Primitives Skill** ([`motion-primitives/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/motion-primitives/SKILL.md)): Motion-first interactive elements (~8k+ stars) including spring morphing cards, gesture swipe cards, Blur Fade text reveals, and cursor trails.
+* **Smooth UI Skill** ([`smooth-ui/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/smooth-ui/SKILL.md)): Fluid micro-interactions, spring physics (`stiffness: 400, damping: 30`), magnetic cursor attraction, layoutId morphing tabs, and elastic accordions.
+* **Unlumen UI Skill** ([`unlumen-ui/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/unlumen-ui/SKILL.md)): Luminous & ambient glow patterns, cursor-tracking spotlights, conic rotating gradient borders, and radiant cards.
+* **Glassmorphism Skill** ([`glassmorphism/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/glassmorphism/SKILL.md)): Ultra-transparent 10% fill, 5px backdrop blur, subtle 8% navy rim borders (`border-[#0C2238]/08`), and soft depth shadows.
+* **Retro UI Skill** ([`retro-ui/SKILL.md`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/.agents/skills/retro-ui/SKILL.md)): 90s/80s Brutalist aesthetics, Classic OS 95 window chrome, 0-blur hard black offset shadows (`shadow-[5px_5px_0px_0px_#000]`), tactile 3D button press interactions, and CRT scanlines.
 
 ---
 
@@ -333,24 +347,22 @@ The project is fully build-ready and pre-configured for one-click deployment acr
     - **Mentor Event Management Portal**: Interactive faculty management suite (`EventManagement.tsx`) with modal creation/editing, live AI skill extraction feedback, search filters, and delete capabilities.
     - **Student Event Explorer & Dashboard Widget**: Dedicated student explorer (`StudentEventsPage.tsx`) with high-match filters, direct registration links, and dashboard top-match carousel (`RecommendedEventsSection.tsx`).
 
-
-25. **Campus 1 Student Dashboard Goal Progress UI Restoration**:
-    - Restored the earlier, rich multi-goal dashboard presentation in [`frontend/src/components/GoalProgressSection.tsx`](file:///c:/Users/HP/Desktop/project1/frontend/src/components/GoalProgressSection.tsx).
+25. **Campus 1 Student Dashboard Goal Progress UI Restoration & Dedicated Goals Hub**:
+    - Restored the rich multi-goal dashboard presentation in [`frontend/src/components/GoalProgressSection.tsx`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/src/components/GoalProgressSection.tsx) and added [`GoalsAndRoadmapPage.tsx`](file:///c:/Users/Krishna%20Singh/Desktop/VIT/project%202..0/frontend/src/components/GoalsAndRoadmapPage.tsx).
     - **Real Dynamic Data Source**: Directly binds to MongoDB Atlas through `studentGoalsApi.getGoals()`, `studentGoalsApi.toggleTask()`, `studentGoalsApi.setPrimaryGoal()`, and `studentGoalsApi.createGoal()`.
-    - **Rich Visual Elements Restored**:
-      - Dynamic Goal selector chips/tabs displaying real goals from MongoDB with automatic domain icons and `PRIMARY` badges.
-      - Compact circular Overall Goal Progress gauge showing backend-calculated percentage and primary status.
-      - Sequential vertical milestone timeline with connecting progress lines, step indicators, completion badges (`✓ Done`, `Active`), and percentage bars.
-      - 2-Column Activity Connection panel: Completed Activities (`task.isCompleted === true`) vs Remaining Tasks (`task.isCompleted === false`) with interactive checkbox toggles that persist immediately to MongoDB.
-      - Dashboard "+ Add Goal" modal to create new career goals and trigger AI roadmaps without navigating away.
+    - **Rich Visual Elements**: Dynamic Goal selector chips/tabs displaying real goals with domain icons and `PRIMARY` badges, compact circular progress gauge, sequential vertical milestone timeline with connecting progress lines, and 2-column Completed vs Remaining activity panels.
 
 26. **AI Student Profile Intelligence & Ranking System**:
     - **Architectural Separation**: Separated contextual AI evidence analysis (Google Gemini) from deterministic backend ranking calculation.
     - **Mongoose Model (`StudentProfileIntelligence`)**: Stores `overallScore`, `profileStrength` tier, `categoryScores` (Technical, Academic, Projects, Competitive, Engagement, Career Readiness), `strengths`, `improvementAreas`, `careerReadiness`, `evidence`, `confidence`, `profileCompleteness`, `profileDataHash`, `status`, and historical audit snapshots.
-    - **Evidence Aggregator (`profileIntelligenceService.js`)**: Aggregates authentic evidence from `User` (skills, projects, competitions, certifications, CGPA), `Goal` (primary target role, roadmap milestones & tasks), `Attendance`, `Submission`, and `OnlineCourse`. Computes SHA-256 evidence hash for staleness detection.
+    - **Evidence Aggregator (`profileIntelligenceService.js`)**: Aggregates authentic evidence from `User`, `Goal`, `Attendance`, `Submission`, and `OnlineCourse`. Computes SHA-256 evidence hash for staleness detection.
     - **Contextual Gemini AI Evaluation**: Prompts Google Gemini with sanitized structured evidence to evaluate depth, difficulty, and relevance to target career roles, returning strict validated JSON.
-    - **Deterministic Ranking Service (`rankingService.js`)**: Computes overall and category ranks, percentiles, and top percentage tiers (`Top 1%`, `Top 5%`, `Top 10%`, `Top 25%`) with deterministic secondary tie-breaking. Queries stored MongoDB scores with index-optimized projections, executing with 0 LLM latency.
+    - **Deterministic Ranking Service (`rankingService.js`)**: Computes overall and category ranks, percentiles, and top percentage tiers with deterministic secondary tie-breaking. Queries stored MongoDB scores with index-optimized projections, executing with 0 LLM latency.
     - **Frontend Experience (`StudentProfileIntelligencePage.tsx`, `ProfileIntelligenceSummaryWidget.tsx`)**: Full dashboard widget and full-page intelligence suite featuring score rings, multi-category progress meters, strengths/gaps breakdowns, "Why Your Rank Changed" explanations, interactive multi-category Leaderboards (Overall, Technical, Readiness, Projects, Academic) with search/filtering/pagination, and a Profile Evidence Editor.
+
+27. **Integrated Modern UI/UX Design System Skills**:
+    - Configured production-grade design skills for **Unlumen UI**, **Magic UI**, **Smooth UI**, and **Retro UI** across workspace and global customization environments.
+    - Equipped full component recipes with Tailwind CSS and Framer Motion integration for instant UI building.
 
 ---
 *Document maintained automatically. Updated for Campus 1 release on GitHub.*
