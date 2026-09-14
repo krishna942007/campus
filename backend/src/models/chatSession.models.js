@@ -36,7 +36,6 @@ const chatSessionSchema = new Schema(
     },
     modelUsed: {
       type: String,
-      enum: ["gemini-2.0-pro", "claude-3.5-sonnet", "gpt-4o"],
       default: "gemini-2.0-pro",
     },
     messages: [messageSchema],

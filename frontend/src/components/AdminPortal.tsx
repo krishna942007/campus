@@ -2055,8 +2055,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToLanding }) => 
               {/* LIVE CHATGPT-STYLE ADMIN OPERATIONS COPILOT WORKSPACE */}
               <div className="pt-2">
                 <ChatGPTAIWorkspace 
-                  userName="Super Admin" 
+                  userName={authUser?.name || "Super Admin"} 
                   userRole="ADMIN" 
+                  userId={authUser?._id}
+                  userEmail={authUser?.email || "admin@vit.edu.in"}
                   onToast={addToast} 
                 />
               </div>

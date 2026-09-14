@@ -3,6 +3,8 @@ import {
   handleAIChat,
   handleRAGSearch,
   getChatSessions,
+  deleteChatSession,
+  clearAllChatSessions,
   handleMentorMatch,
   handleSkillGapAnalysis,
   handleUploadKnowledgeDocument,
@@ -17,8 +19,11 @@ router.route("/rag-search").post(softVerifyJWT, handleRAGSearch);
 router.route("/mentor-match").post(softVerifyJWT, handleMentorMatch);
 router.route("/skill-gap").post(softVerifyJWT, handleSkillGapAnalysis);
 
-// Authenticated session & admin management routes
-router.route("/sessions").get(verifyJWT, getChatSessions);
+// Authenticated private session & admin management routes
+router.route("/sessions").get(softVerifyJWT, getChatSessions);
+router.route("/sessions/:id").delete(softVerifyJWT, deleteChatSession);
+router.route("/sessions/clear").post(softVerifyJWT, clearAllChatSessions);
 router.route("/upload-knowledge").post(verifyJWT, handleUploadKnowledgeDocument);
 
 export default router;
+

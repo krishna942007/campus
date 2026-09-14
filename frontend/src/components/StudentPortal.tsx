@@ -2161,8 +2161,11 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ onBackToLanding })
           {activeNav === 'AI Assistant' && (
             <div className="space-y-4">
               <ChatGPTAIWorkspace 
-                userName={profileData.name} 
+                userName={profileData.name || authUser?.name || 'Aarav Sharma'} 
                 userRole="STUDENT" 
+                userId={authUser?._id}
+                userEmail={authUser?.email || profileData?.email || '2023cse001@vit.edu.in'}
+                rollNo={authUser?.rollNo || profileData?.rollNo || '2023CSE001'}
                 onToast={addToast} 
               />
             </div>

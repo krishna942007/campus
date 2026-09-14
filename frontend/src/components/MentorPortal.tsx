@@ -1831,8 +1831,10 @@ export const MentorPortal: React.FC<MentorPortalProps> = ({ onBackToLanding }) =
           {activeNav === 'AI Mentor Assistant' && (
             <div className="space-y-4">
               <ChatGPTAIWorkspace 
-                userName="Prof. S. Kulkarni" 
+                userName={authUser?.name || "Prof. S. Kulkarni"} 
                 userRole="MENTOR" 
+                userId={authUser?._id}
+                userEmail={authUser?.email || "s.kulkarni@vit.edu.in"}
                 onToast={addToast} 
               />
             </div>
