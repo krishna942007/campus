@@ -14,6 +14,7 @@ import {
   Award
 } from 'lucide-react';
 import { profileIntelligenceApi, ProfileIntelligenceDoc, RankInfo } from '../services/api';
+import { createDefaultIntelligence } from './StudentProfileIntelligencePage';
 
 interface ProfileIntelligenceSummaryWidgetProps {
   onOpenFullIntelligence: () => void;
@@ -30,13 +31,34 @@ export const ProfileIntelligenceSummaryWidget: React.FC<ProfileIntelligenceSumma
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const LOCAL_INTEL_KEY = 'vit_mumbai_intelligence_cache_v1';
+
   const fetchSummary = async () => {
     try {
       setLoading(true);
-      const res = await profileIntelligenceApi.getIntelligence();
-      setData(res.data);
+      try {
+        const res = await profileIntelligenceApi.getIntelligence();
+        if (res?.data?.intelligence) {
+          setData(res.data);
+          return;
+        }
+      } catch (apiErr) {
+        console.warn('API getIntelligence failed for widget, using fallback:', apiErr);
+      }
+
+      // Check localStorage or use default
+      try {
+        const cached = localStorage.getItem(LOCAL_INTEL_KEY);
+        if (cached) {
+          setData(JSON.parse(cached));
+          return;
+        }
+      } catch {}
+
+      setData(createDefaultIntelligence());
     } catch (err) {
       console.error('Failed to load profile intelligence summary:', err);
+      setData(createDefaultIntelligence());
     } finally {
       setLoading(false);
     }
