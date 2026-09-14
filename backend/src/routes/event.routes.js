@@ -14,7 +14,7 @@ const router = Router();
 
 // Public & Student Recommendation Endpoints
 router.route("/").get(softVerifyJWT, getAllEvents);
-router.route("/recommendations").get(verifyJWT, getRecommendedEventsForStudent);
+router.route("/recommendations").get(softVerifyJWT, getRecommendedEventsForStudent);
 router.route("/mentor").get(verifyJWT, getMentorEvents);
 router.route("/:id").get(softVerifyJWT, getEventById);
 

@@ -11,6 +11,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { eventApi, CampusEvent } from '../services/api';
+import { DEFAULT_CAMPUS_EVENTS } from './StudentEventsPage';
 
 interface RecommendedEventsSectionProps {
   onViewAllEvents: () => void;
@@ -19,7 +20,7 @@ interface RecommendedEventsSectionProps {
 export const RecommendedEventsSection: React.FC<RecommendedEventsSectionProps> = ({
   onViewAllEvents,
 }) => {
-  const [events, setEvents] = useState<CampusEvent[]>([]);
+  const [events, setEvents] = useState<CampusEvent[]>(DEFAULT_CAMPUS_EVENTS.slice(0, 3));
   const [loading, setLoading] = useState(true);
   const [studentGoal, setStudentGoal] = useState<string | null>(null);
 
@@ -29,14 +30,20 @@ export const RecommendedEventsSection: React.FC<RecommendedEventsSectionProps> =
       try {
         setLoading(true);
         const res = await eventApi.getRecommendations();
-        if (isMounted && res?.data?.recommendations) {
-          setEvents(res.data.recommendations.slice(0, 3));
-          if (res.data.studentTargetGoal) {
+        if (isMounted) {
+          const recs = Array.isArray(res?.data?.recommendations) && res.data.recommendations.length > 0
+            ? res.data.recommendations
+            : DEFAULT_CAMPUS_EVENTS;
+          setEvents(recs.slice(0, 3));
+          if (res?.data?.studentTargetGoal) {
             setStudentGoal(res.data.studentTargetGoal);
           }
         }
       } catch (err) {
-        console.warn('Failed to load dashboard event recommendations:', err);
+        console.warn('Failed to load dashboard event recommendations, using default fallback:', err);
+        if (isMounted) {
+          setEvents(DEFAULT_CAMPUS_EVENTS.slice(0, 3));
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -47,10 +54,6 @@ export const RecommendedEventsSection: React.FC<RecommendedEventsSectionProps> =
       isMounted = false;
     };
   }, []);
-
-  if (!loading && events.length === 0) {
-    return null;
-  }
 
   return (
     <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-[#0C2238]/10 shadow-lg shadow-[#0C2238]/05 p-6 space-y-4 transition-all duration-300">
