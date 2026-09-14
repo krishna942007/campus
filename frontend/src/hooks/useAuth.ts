@@ -42,8 +42,12 @@ export function useAuth() {
   const currentUserQuery = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
-      const res: any = await api.get('/auth/current-user');
-      return res.data;
+      try {
+        const res: any = await api.get('/auth/current-user');
+        return res?.data ?? null;
+      } catch (err) {
+        return null;
+      }
     },
     retry: false,
   });

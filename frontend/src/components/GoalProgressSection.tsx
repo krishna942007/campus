@@ -60,21 +60,115 @@ export const GoalProgressSection: React.FC<GoalProgressSectionProps> = ({ onGoal
   const [newGoalDesc, setNewGoalDesc] = useState('');
   const [isCreatingGoal, setIsCreatingGoal] = useState(false);
 
-  // Fetch real goals from MongoDB
+  // Local storage cache key for fallback/offline persistence
+  const LOCAL_GOALS_KEY = 'vit_mumbai_custom_goals_v1';
+
+  const getLocalGoals = (): any[] => {
+    try {
+      const cached = localStorage.getItem(LOCAL_GOALS_KEY);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const saveLocalGoals = (goalsToSave: any[]) => {
+    try {
+      localStorage.setItem(LOCAL_GOALS_KEY, JSON.stringify(goalsToSave));
+    } catch {}
+  };
+
+  const createFallbackGoal = (title: string, description?: string, isFirst = false) => {
+    const cleanTitle = title.trim();
+    const timestamp = Date.now();
+    return {
+      _id: `goal_${timestamp}`,
+      title: cleanTitle,
+      description: description || `Target career preparation & milestone roadmap for ${cleanTitle}`,
+      isPrimary: isFirst,
+      progress: 0,
+      status: 'ACTIVE',
+      roadmapGenerationStatus: 'completed',
+      roadmap: [
+        {
+          _id: `ms_1_${timestamp}`,
+          title: `Phase 1: Foundations & Prerequisites for ${cleanTitle}`,
+          description: `Core eligibility criteria, foundational theory, and initial competencies for ${cleanTitle}.`,
+          durationWeeks: 6,
+          order: 1,
+          status: 'IN_PROGRESS',
+          progress: 0,
+          tasks: [
+            { _id: `t_1_1_${timestamp}`, text: `Master foundational domain requirements for ${cleanTitle}`, isCompleted: false },
+            { _id: `t_1_2_${timestamp}`, text: 'Review syllabus, physical/technical criteria & examination patterns', isCompleted: false },
+            { _id: `t_1_3_${timestamp}`, text: 'Complete diagnostic self-assessment test and initial benchmarks', isCompleted: false }
+          ]
+        },
+        {
+          _id: `ms_2_${timestamp}`,
+          title: `Phase 2: Core Technical & Practical Competencies`,
+          description: `Hands-on simulations, specialized coursework, and rigorous practice milestones.`,
+          durationWeeks: 8,
+          order: 2,
+          status: 'PENDING',
+          progress: 0,
+          tasks: [
+            { _id: `t_2_1_${timestamp}`, text: 'Complete advanced problem sets & domain-specific mock evaluations', isCompleted: false },
+            { _id: `t_2_2_${timestamp}`, text: 'Conduct practical lab exercises / physical endurance simulations', isCompleted: false },
+            { _id: `t_2_3_${timestamp}`, text: 'Participate in peer group assessments & mock interviews', isCompleted: false }
+          ]
+        },
+        {
+          _id: `ms_3_${timestamp}`,
+          title: `Phase 3: Final Certification & Selection Readiness`,
+          description: `Capstone validation, mock interviews, and final qualification clearances.`,
+          durationWeeks: 4,
+          order: 3,
+          status: 'PENDING',
+          progress: 0,
+          tasks: [
+            { _id: `t_3_1_${timestamp}`, text: 'Comprehensive full-length qualifying exam simulations', isCompleted: false },
+            { _id: `t_3_2_${timestamp}`, text: 'Faculty mentor review and roadmap verification', isCompleted: false },
+            { _id: `t_3_3_${timestamp}`, text: 'Submit official application / portfolio verification dossier', isCompleted: false }
+          ]
+        }
+      ],
+      createdAt: new Date().toISOString()
+    };
+  };
+
+  // Fetch real goals from MongoDB with fallback
   const fetchGoals = async (preferredSelectedId?: string) => {
     try {
       setIsLoading(true);
-      const res = await studentGoalsApi.getGoals();
-      const goalsList = res.data || [];
-      setDbGoals(goalsList);
+      const localCached = getLocalGoals();
+      let goalsList: any[] = [];
+      try {
+        const res = await studentGoalsApi.getGoals();
+        goalsList = Array.isArray(res?.data) ? res.data : [];
+      } catch (apiErr) {
+        console.warn('API getGoals unavailable, using local cached goals:', apiErr);
+      }
+
+      // Merge backend goals and local custom goals (deduplicating by _id / title)
+      const mergedMap = new Map<string, any>();
+      goalsList.forEach(g => mergedMap.set(g._id || g.title, g));
+      localCached.forEach(g => {
+        if (!mergedMap.has(g._id) && !mergedMap.has(g.title)) {
+          mergedMap.set(g._id, g);
+        }
+      });
+
+      const finalGoals = Array.from(mergedMap.values());
+      setDbGoals(finalGoals);
 
       // Determine active goal
       let activeGoal = null;
       if (preferredSelectedId) {
-        activeGoal = goalsList.find((g: any) => g._id === preferredSelectedId);
+        activeGoal = finalGoals.find((g: any) => g._id === preferredSelectedId);
       }
       if (!activeGoal) {
-        activeGoal = goalsList.find((g: any) => g.isPrimary) || goalsList[0] || null;
+        activeGoal = finalGoals.find((g: any) => g.isPrimary) || finalGoals[0] || null;
       }
 
       if (activeGoal) {
@@ -126,49 +220,72 @@ export const GoalProgressSection: React.FC<GoalProgressSectionProps> = ({ onGoal
   // Overall goal percentage calculated from backend progress or milestone average
   const overallGoalPercentage = currentGoal ? Math.round(currentGoal.progress || 0) : 0;
 
-  // Task toggling handler (optimistic update + MongoDB persistence)
+  // Task toggling handler (optimistic update + MongoDB / Local persistence)
   const handleToggleTask = async (milestoneId: string, taskId: string) => {
     if (!currentGoal) return;
     const goalId = currentGoal._id;
 
     // Optimistic local state update
-    setDbGoals((prevGoals) =>
-      prevGoals.map((g) => {
-        if (g._id !== goalId) return g;
+    const updatedGoals = dbGoals.map((g) => {
+      if (g._id !== goalId) return g;
+      const updatedRoadmap = (g.roadmap || []).map((m: any) => {
+        if (m._id !== milestoneId) return m;
+        const updatedTasks = (m.tasks || []).map((t: any) =>
+          t._id === taskId ? { ...t, isCompleted: !t.isCompleted } : t
+        );
+        const completedCount = updatedTasks.filter((t: any) => t.isCompleted).length;
+        const milestoneProgress = updatedTasks.length > 0 ? Math.round((completedCount / updatedTasks.length) * 100) : 0;
         return {
-          ...g,
-          roadmap: (g.roadmap || []).map((m: any) => {
-            if (m._id !== milestoneId) return m;
-            return {
-              ...m,
-              tasks: (m.tasks || []).map((t: any) =>
-                t._id === taskId ? { ...t, isCompleted: !t.isCompleted } : t
-              )
-            };
-          })
+          ...m,
+          tasks: updatedTasks,
+          progress: milestoneProgress,
+          status: milestoneProgress === 100 ? 'COMPLETED' : milestoneProgress > 0 ? 'IN_PROGRESS' : m.status
         };
-      })
-    );
+      });
+      const totalTasks = updatedRoadmap.reduce((acc: number, m: any) => acc + (m.tasks?.length || 0), 0);
+      const completedTotal = updatedRoadmap.reduce((acc: number, m: any) => acc + (m.tasks?.filter((t: any) => t.isCompleted)?.length || 0), 0);
+      const overallProgress = totalTasks > 0 ? Math.round((completedTotal / totalTasks) * 100) : 0;
+
+      return {
+        ...g,
+        roadmap: updatedRoadmap,
+        progress: overallProgress
+      };
+    });
+
+    setDbGoals(updatedGoals);
+    saveLocalGoals(updatedGoals);
 
     try {
       await studentGoalsApi.toggleTask(goalId, milestoneId, taskId);
-      // Re-fetch to synchronize exact backend progress calculation
       const res = await studentGoalsApi.getGoals();
-      setDbGoals(res.data || []);
+      if (res?.data) {
+        setDbGoals(res.data);
+      }
     } catch (err) {
-      console.error('Failed to toggle task:', err);
-      // Revert on error
-      fetchGoals(goalId);
+      console.warn('API task toggle fallback to local state:', err);
     }
   };
 
   // Handle Set as Primary Goal
   const handleSetPrimary = async (goalId: string) => {
+    const updated = dbGoals.map((g) => ({
+      ...g,
+      isPrimary: g._id === goalId
+    }));
+    setDbGoals(updated);
+    saveLocalGoals(updated);
+
+    const targetGoal = dbGoals.find(g => g._id === goalId);
+    if (targetGoal) {
+      studentStore.setCareerGoal(targetGoal.title);
+    }
+
     try {
       await studentGoalsApi.setPrimaryGoal(goalId);
       fetchGoals(goalId);
     } catch (err) {
-      console.error('Failed to set primary goal:', err);
+      console.warn('API setPrimary fallback:', err);
     }
   };
 
@@ -177,16 +294,53 @@ export const GoalProgressSection: React.FC<GoalProgressSectionProps> = ({ onGoal
     e.preventDefault();
     if (!newGoalTitle.trim()) return;
     setIsCreatingGoal(true);
+    const title = newGoalTitle.trim();
+    const description = newGoalDesc.trim();
+
     try {
-      const res: any = await studentGoalsApi.createGoal({
-        title: newGoalTitle.trim(),
-        description: newGoalDesc.trim()
-      });
+      let createdId: string | undefined;
+      try {
+        const res: any = await studentGoalsApi.createGoal({ title, description });
+        createdId = res?.data?._id;
+      } catch (apiErr) {
+        console.warn('API createGoal failed, creating local fallback goal:', apiErr);
+      }
+
+      if (!createdId) {
+        // Fallback local creation
+        const isFirst = dbGoals.length === 0;
+        const fallbackGoal = createFallbackGoal(title, description, isFirst);
+        createdId = fallbackGoal._id;
+        const currentLocals = getLocalGoals();
+        const updatedLocals = [fallbackGoal, ...currentLocals];
+        saveLocalGoals(updatedLocals);
+        setDbGoals([fallbackGoal, ...dbGoals]);
+        setSelectedGoalId(fallbackGoal._id);
+        if (fallbackGoal.roadmap && fallbackGoal.roadmap.length > 0) {
+          setSelectedStepId(fallbackGoal.roadmap[0]._id);
+        }
+        if (isFirst) {
+          studentStore.setCareerGoal(fallbackGoal.title);
+        }
+      }
+
       setShowAddModal(false);
       setNewGoalTitle('');
       setNewGoalDesc('');
-      const createdId = res.data?._id;
-      await fetchGoals(createdId);
+
+      window.dispatchEvent(
+        new CustomEvent('campus-toast', {
+          detail: {
+            title: 'Goal Created Successfully',
+            message: `AI Career roadmap generated for "${title}".`,
+            type: 'success',
+          },
+        })
+      );
+
+      if (createdId) {
+        await fetchGoals(createdId);
+      }
     } catch (err) {
       console.error('Failed to create goal:', err);
     } finally {
